@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Фильтры в мобильной версии -->
+    <div class="col-12 d-lg-none mb-3">
+        <button class="btn btn-primary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#mobileFilters"
+        aria-expanded="false" aria-controls="mobileFilters">
+        Відкрити фільтри
+    </button>
+    <div class="collapse mt-3" id="mobileFilters">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Фільтри</h5>
+            </div>
+            <div class="card-body">
+                <form action="" method="GET" id="filter-form-mobile">
+                    <!-- Фильтр по категории -->
+                    <div class="mb-3">
+                        <label for="category-filter-mobile" class="form-label">Категорія</label>
+                        <select class="form-select" id="category-filter-mobile" name="category">
+                            <option value="">Оберіть категорію</option>
+                            <option value="tech">Технології</option>
+                            <option value="travel">Подорожі</option>
+                            <option value="education">Освіта</option>
+                            <option value="sports">Спорт</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">Застосувати</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Фильтры для больших экранов -->
+<aside class="col-lg-3 filters d-none d-lg-block">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Фільтри</h5>
+        </div>
+        <div class="card-body">
+            <form action="" method="GET" id="filter-form">
+                <!-- Фильтр по категории -->
+                <div class="mb-3">
+                    <label for="category-filter" class="form-label">Категорія</label>
+                    <select class="form-select" id="category-filter" name="category">
+                        <option value="">Оберіть категорію</option>
+                        <option value="tech">Технології</option>
+                        <option value="travel">Подорожі</option>
+                        <option value="education">Освіта</option>
+                        <option value="sports">Спорт</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">Застосувати</button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<!-- Список категорий -->
+<main class="col-lg-9">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Список всіх категорій</h2>z
+
+    </div>
+
+
+
+    <!-- Список категорий в карточках -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
+        {% for category in all_categories %}
+        <div class="col">
+            <div class="card">
+                <img src="{{ category.image_url }}" class="card-img-top" alt="{{ category.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ category.name }}</h5>
+                    <p class="card-text">{{ category.description }}</p>
+                    <a href="#" class="btn btn-primary w-100">Перейти</a>
+                    <a href="#" class="btn btn-success w-100 mt-2">+ Створити тему</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+
+{% endblock content %}

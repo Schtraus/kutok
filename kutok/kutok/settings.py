@@ -13,13 +13,13 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 import environ
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Создаем объект Env
 env = environ.Env(DEBUG=(bool, False))
-
 # Читаем файл .env
 environ.Env.read_env(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
 
@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'users.apps.UsersConfig',
+    'forum.apps.ForumConfig',
 ]
 
 MIDDLEWARE = [
@@ -55,7 +57,9 @@ ROOT_URLCONF = 'kutok.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -67,6 +71,15 @@ TEMPLATES = [
         },
     },
 ]
+
+# Путь к статическим файлам
+STATIC_URL = '/static/'
+
+# Папка для хранения статических файлов на сервере (для production)
+# STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Папка для поиска статических файлов в проекте (в разработке)
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 WSGI_APPLICATION = 'kutok.wsgi.application'
 
@@ -122,3 +135,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Настройки для работы с медиафайлами
+MEDIA_URL = '/media/'  # URL для доступа к файлам через браузер
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Папка на сервере для хранения файлов§

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Форум для {% endblock title %}
+
+{% block content %}
+
+ <!-- Описание сайта -->
+ <section class="site-description py-5 bg-light">
+    <div class="container text-center">
+        <h2>Чому варто приєднатися до нашого форуму?</h2>
+        <p class="lead">Це місце, де українці, які знаходяться в Європі, можуть обмінюватися досвідом, знаходити підтримку та допомогу, а також знайомитись з новими людьми. Обговорюйте новини, життя в Європі, отримуйте поради та знайомтесь з іншими.</p>
+    </div>
+</section>
+
+
+    <section class="category-list">
+        <h2 class="mb-4">Категорії</h2>
+        <div class="row">
+            {% for category in all_categories %}
+            
+            <div class="col-md-3 mb-3">
+                <div class="card category-card">
+                    <img src="{{category.image.url}}" class="card-img-top" alt="{{ category.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ category.name }}</h5>
+                        <a href="#" class="btn btn-primary">Перейти</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            
+        </div>
+    </section>
+
+    <section class="thread-list">
+        <h2 class="mb-4">Останні теми</h2>
+        <ul class="list-group mb-3">
+            {% for thread in last_threads %}
+                <li class="list-group-item">
+                    <a href="{{thread.get_absolute_url}}">{{ thread.title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+        <!-- Кнопка для просмотра всех тем -->
+        <a href="{% url "forum:thread_list" %}" class="btn btn-primary">Переглянути всі теми</a>
+        <!-- Кнопка для создания новой темы -->
+        <a href="#" class="btn btn-success">Створити тему</a>
+    </section>
+
+
+
+{% endblock content %}

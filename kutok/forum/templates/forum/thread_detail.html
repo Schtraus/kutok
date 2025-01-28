@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+    {% block content %}
+    
+    <div class="container my-5">
+        <!-- Заголовок треда -->
+        <h1>{{ thread.title }}</h1>
+        <p class="text-muted">
+            Автор: {{ thread.author }} |
+            Дата створення: {{ thread.created_at }} |
+            Останнє оновлення: {{ thread.updated_at }}
+        </p>
+        
+        <!-- Контент треда -->
+        <div class="thread-content mb-4">
+            <h2 class="h5">Питання від автора:</h2>
+            <p>
+                Які є поради для новачків, які щойно переїхали до Європи? 
+                Чи є якісь корисні ресурси або спільноти для інтеграції в суспільство? 
+                Хотів би почути думки більш досвідчених людей.
+            </p>
+        </div>
+        
+        <hr>
+
+        <!-- Форма для добавления комментария -->
+        <section class="add-comment mb-4">
+            <h2 class="h5">Додати коментар</h2>
+            <form method="POST">
+                <div class="mb-3">
+                    <textarea class="form-control" name="content" rows="3" placeholder="Напишіть ваш коментар"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Додати</button>
+            </form>
+        </section>
+        
+        <hr>
+
+        <!-- Список комментариев -->
+        <section class="comments">
+            <h2 class="h5 mb-4">Коментарі</h2>
+            <ul class="list-group">
+                <!-- Один комментарий -->
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>Ім'я користувача</strong>
+                        <span class="text-muted small">— 23 Січ 2025 15:00</span>
+                        <p class="mb-0">Рекомендую відвідати місцеві мовні курси. Це не лише допоможе з мовою, але й з інтеграцією.</p>
+                    </div>
+                </li>
+                <!-- Еще один комментарий -->
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>Інший користувач</strong>
+                        <span class="text-muted small">— 23 Січ 2025 15:30</span>
+                        <p class="mb-0">Спробуйте знайти місцеві групи на Facebook, вони зазвичай дуже активні.</p>
+                    </div>
+                </li>
+                <!-- Другие комментарии -->
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>Експат з досвідом</strong>
+                        <span class="text-muted small">— 23 Січ 2025 16:00</span>
+                        <p class="mb-0">Я вважаю, що найважливіше — знайти роботу, навіть якщо це не за професією. Це допоможе почати.</p>
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>Марія</strong>
+                        <span class="text-muted small">— 23 Січ 2025 16:15</span>
+                        <p class="mb-0">Є гарний ресурс для українців: [посилання]. Там багато корисної інформації.</p>
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>Василь</strong>
+                        <span class="text-muted small">— 23 Січ 2025 16:30</span>
+                        <p class="mb-0">Долучайтеся до українських спільнот у вашому місті. Це дуже допомагає!</p>
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>Ігор</strong>
+                        <span class="text-muted small">— 23 Січ 2025 16:45</span>
+                        <p class="mb-0">Я завжди раджу знайти місцевий волонтерський центр. Це допоможе швидше адаптуватися.</p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </div>
+
+    <!-- Подключение Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    {% endblock content %}
+

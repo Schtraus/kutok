@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<div class="row">
+    <!-- Фильтры в мобильной версии -->
+    <div class="col-12 d-lg-none mb-3">
+        <button class="btn btn-primary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#mobileFilters"
+        aria-expanded="false" aria-controls="mobileFilters">
+        Відкрити фільтри
+    </button>
+    <div class="collapse mt-3" id="mobileFilters">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Фільтри</h5>
+            </div>
+            <div class="card-body">
+                <form action="" method="GET" id="filter-form-mobile">
+                    <!-- Фильтр по стране -->
+                    <div class="mb-3">
+                        <label for="country-filter-mobile" class="form-label">Країна</label>
+                        <select class="form-select" id="country-filter-mobile" name="country">
+                            <option value="">Оберіть країну</option>
+                            <option value="ukraine">Україна</option>
+                            <option value="poland">Польща</option>
+                            <option value="germany">Німеччина</option>
+                            <option value="france">Франція</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Фильтр по категории -->
+                    <div class="mb-3">
+                        <label for="category-filter-mobile" class="form-label">Категорія</label>
+                        <select class="form-select" id="category-filter-mobile" name="category">
+                            <option value="">Оберіть категорію</option>
+                            <option value="tech">Технології</option>
+                            <option value="travel">Подорожі</option>
+                            <option value="education">Освіта</option>
+                            <option value="sports">Спорт</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">Застосувати</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Фильтры для больших экранов -->
+<aside class="col-lg-3 filters d-none d-lg-block">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Фільтри</h5>
+        </div>
+        <div class="card-body">
+            <form action="" method="GET" id="filter-form">
+                <!-- Фильтр по стране -->
+                <div class="mb-3">
+                    <label for="country-filter" class="form-label">Країна</label>
+                    <select class="form-select" id="country-filter" name="country">
+                        <option value="">Оберіть країну</option>
+                        <option value="ukraine">Україна</option>
+                        <option value="poland">Польща</option>
+                        <option value="germany">Німеччина</option>
+                        <option value="france">Франція</option>
+                    </select>
+                </div>
+                
+                <!-- Фильтр по категории -->
+                <div class="mb-3">
+                    <label for="category-filter" class="form-label">Категорія</label>
+                    <select class="form-select" id="category-filter" name="category">
+                        <option value="">Оберіть категорію</option>
+                        <option value="tech">Технології</option>
+                        <option value="travel">Подорожі</option>
+                        <option value="education">Освіта</option>
+                        <option value="sports">Спорт</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">Застосувати</button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<!-- Список тредов -->
+<main class="col-lg-9">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Список всіх тредів</h2>
+        <a href="#" class="btn btn-success d-none d-lg-inline-block">+ Створити тему</a>
+    </div>
+    
+    <!-- Кнопка для мобильной версии -->
+    <a href="#" class="btn btn-success btn-create-thread d-lg-none">+ Створити тему</a>
+    
+    <!-- Список тредов с отрывком -->
+    <ul class="thread-list mt-3">
+        {% for thread in all_threads %}
+        <li class="thread-list-item">
+            <h3 class="thread-title">
+                <a href="{{thread.get_absolute_url}}">{{ thread.title }}</a>
+            </h3>
+            <p class="thread-meta">Опубліковано: {{ thread.created_at }} | Коментарів: {{ thread.comment_count }}</p>
+            <p class="thread-excerpt">
+                {{ thread.content|linebreaks|truncatewords:30 }}
+            </p>
+        </li>
+        {% endfor %}
+    </ul>
+    
+    <!-- Пагинация -->
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1">Попередня</a>
+            </li>
+            <li class="page-item"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item">
+                <a class="page-link" href="#">Наступна</a>
+            </li>
+        </ul>
+    </nav>
+</main>
+
+
+{% endblock content %}
