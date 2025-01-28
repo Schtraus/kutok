@@ -22,6 +22,7 @@ def thread_detail(request, thread_slug):
     }
     return render(request, 'forum/thread_detail.html', context=data)
 
+
 def thread_list(request):
     # all_threads = Thread.objects.all()
     all_threads = Thread.objects.annotate(comment_count=Count('comments'))
@@ -30,6 +31,7 @@ def thread_list(request):
         'all_threads': all_threads
     }
     return render(request, 'forum/thread_list.html', context=data)
+
 
 def category_list(request):
     all_categories = all_categories = Category.objects.all()

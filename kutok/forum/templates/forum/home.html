@@ -14,7 +14,11 @@
 
 
     <section class="category-list">
-        <h2 class="mb-4">Категорії</h2>
+        <!-- Заголовок с кнопкой -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Категорії</h2>
+        <a href="/categories/" class="btn btn-secondary btn-lg">Переглянути всі категорії</a>
+    </div>
         <div class="row">
             {% for category in all_categories %}
             
