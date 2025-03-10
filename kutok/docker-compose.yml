@@ -1,0 +1,36 @@
+services:
+  web:
+    build: .
+    container_name: kutok_web
+    command: daphne -b 0.0.0.0 -p 8000 kutok.asgi:application  # Используем порт для TCP-соединения
+    volumes:
+      - .:/app
+      - ./staticfiles:/app/staticfiles  # Тома для статики
+    ports:
+      - "8000:8000"  # Открываем порт 8000 для доступа
+    env_file:
+      - .env  # Загружаем переменные из файла .env
+    depends_on:
+      - db
+      - redis
+    restart: always 
+
+  db:
+    image: postgres:13
+    container_name: kutok_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env  # Загружаем переменные окружения для базы данных
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+
+  redis:
+    image: redis:latest
+    container_name: kutok_redis
+
+volumes:
+  postgres_data:
+  staticfiles:  # Тома для статики

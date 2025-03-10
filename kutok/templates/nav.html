@@ -17,18 +17,22 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
+
                 <!-- Строка поиска -->
-                <form class="d-flex me-auto ms-lg-3" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Пошук" aria-label="Search">
+                <form class="d-flex me-auto ms-lg-3" role="search" method="get" action="{% url 'forum:thread_list' %}">
+                    <input class="form-control me-2" type="search" name="q" placeholder="Пошук" aria-label="Search" value="{{ request.GET.q }}">
                     <button class="btn btn-outline-success" type="submit">Пошук</button>
                 </form>
 
                 <!-- Навигационные ссылки -->
                 <div class="navbar-nav ms-auto me-3">
-                    <a class="nav-link" href="#">Профіль</a>
-                    <a class="nav-link" href="#">Вихід</a>
+                    {% if user.is_authenticated %}
+                    <a class="nav-link" href="{% url 'users:profile' %}">Профіль</a>
+                    <a class="nav-link" href="{% url 'users:logout' %}">Вихід</a>
+                    {% else %}
                     <a class="nav-link" href="{% url 'users:login' %}">Увійти</a>
-                    <a class="nav-link" href="#">Реєстрація</a>
+                    <a class="nav-link" href="{% url 'users:register' %}">Реєстрація</a>
+                    {% endif %} 
                 </div>
 
                 <!-- Фильтр по стране -->

@@ -1,0 +1,50 @@
+# Логи
+*.log
+
+# Временные файлы
+*.bak
+*.swp
+*.tmp
+
+# Скомпилированные файлы Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Скомпилированные файлы фронтенда
+dist/
+build/
+*.map
+
+# Виртуальные окружения
+venv/
+env/
+.venv/
+
+# Настройки IDE
+.vscode/
+.idea/
+
+# Файлы резервных копий редакторов
+*~
+*.sublime-project
+*.sublime-workspace
+
+# # Конфиденциальные файлы
+# .env
+# *.env
+
+# Документация
+docs/
+*.md
+
+# Тесты
+tests/
+test/
+*.test
+*.spec
+
+# Кэш и сессии
+*.cache
+*.session

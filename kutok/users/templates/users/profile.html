@@ -1,1 +1,36 @@
-<h1>Profile</h1>
+{% extends "base.html" %}
+{% block title %}Profile {% endblock title %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center mb-4">Мій профіль</h2>
+            <form>
+                <!-- Отображение никнейма пользователя -->
+                <div class="mb-3">
+                    <label for="username" class="form-label">Ім'я користувача</label>
+                    <input type="text" class="form-control" id="username" value="{{ user.username }}" disabled>
+                </div>
+
+                <!-- Отображение почтового адреса -->
+                <div class="mb-3">
+                    <label for="email" class="form-label">Електронна пошта</label>
+                    <input type="email" class="form-control" id="email" value="{{ user.email }}" disabled>
+                </div>
+
+                <!-- Кнопка для изменения пароля -->
+                <div class="text-center">
+                    <a href="{% url "users:password_change" %}" class="btn btn-primary w-100">Змінити пароль</a>
+                </div>
+            </form>
+
+            <!-- Кнопка для удаления профиля (опционально) -->
+            <div class="text-center mt-4">
+                <button class="btn btn-danger w-100">Видалити профіль</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

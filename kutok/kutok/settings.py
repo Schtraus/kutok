@@ -23,23 +23,42 @@ env = environ.Env(DEBUG=(bool, False))
 # Читаем файл .env
 environ.Env.read_env(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
 
-
 SECRET_KEY = env('SECRET_KEY')  # Берется из .env
 DEBUG = env.bool('DEBUG', default=False)  # Преобразуется в bool
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])  # Преобразуется в список
+
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = env('EMAIL_PORT', cast=int)
+EMAIL_USE_TLS = env('EMAIL_USE_TLS', cast=bool)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('DB_NAME', default='kutok'),
+        'USER': env('DB_USER', default='blog'),
+        'PASSWORD': env('DB_PASSWORD', default='Grekovinka322'),
+        'HOST': env('DB_HOST', default='localhost'),
+        'PORT': env('DB_PORT', default=5432, cast=int),
+    }
+}
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
-    'users.apps.UsersConfig',
     'forum.apps.ForumConfig',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -72,8 +91,11 @@ TEMPLATES = [
     },
 ]
 
+
 # Путь к статическим файлам
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 # Папка для хранения статических файлов на сервере (для production)
 # STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -82,18 +104,34 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 WSGI_APPLICATION = 'kutok.wsgi.application'
+# Меняем WSGI на ASGI
+# ASGI_APPLICATION = 'kutok.asgi.application'
+ASGI_APPLICATION = 'kutok.asgi.application'
 
+# Настройка Redis для обмена сообщениями
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],  # Redis по стандартному порту
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'kutok',
+#         'USER': 'blog',
+#         'PASSWORD': 'Grekovinka322',
+#     }
+# }
 
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -140,3 +178,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Настройки для работы с медиафайлами
 MEDIA_URL = '/media/'  # URL для доступа к файлам через браузер
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Папка на сервере для хранения файлов§
+

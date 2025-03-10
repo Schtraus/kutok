@@ -5,9 +5,15 @@ from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from unidecode import unidecode
+from django.contrib.auth.models import User
 
-
-# Create your models here.
+COUNTRIES = [
+    ('ukraine', 'Україна'),
+    ('poland', 'Польща'),
+    ('germany', 'Німеччина'),
+    ('france', 'Франція'),
+    ('zimbabwe', 'Зимбабве'),
+]
 
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True, verbose_name="Назва категорії")
@@ -15,10 +21,6 @@ class Category(models.Model):
     description = models.TextField(blank=True, null=True, verbose_name="Опис категорії")
     image = models.ImageField(upload_to='categories/', blank=True, null=True, verbose_name="Зображення категорії")
     is_active = models.BooleanField(default=True, verbose_name="Активна категорія")
-    # parent = models.ForeignKey(
-    #     'self', on_delete=models.SET_NULL, blank=True, null=True,
-    #     related_name='subthreads', verbose_name="Батьківська категорія"
-    # )
 
     class Meta:
         verbose_name = "Категорія"
@@ -27,7 +29,7 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-
+    
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
@@ -38,12 +40,10 @@ class Category(models.Model):
     
 
 
-
 class Thread(models.Model):
+
     title = models.CharField(max_length=255, verbose_name="Назва обговорення")
     slug = models.SlugField(max_length=255, unique=True, verbose_name="URL обговорення", blank=True)
-    
-    
     content = models.TextField(verbose_name="Текст обговорення")
     category = models.ForeignKey(
         'Category', on_delete=models.PROTECT, 
@@ -54,6 +54,7 @@ class Thread(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата оновлення")
     is_active = models.BooleanField(default=True, verbose_name="Активне обговорення")
+    country = models.CharField(max_length=20, choices=COUNTRIES, blank=True, verbose_name="Країна")
 
     class Meta:
         indexes = [
@@ -68,11 +69,9 @@ class Thread(models.Model):
             # Преобразуем кириллицу в латиницу
             slugified_title = unidecode(self.title)
             self.slug = slugify(slugified_title)
-            
             # Если слаг уже существует, генерируем уникальный
             while Thread.objects.filter(slug=self.slug).exists():
                 self.slug = f"{slugify(slugified_title)}-{self.generate_random_string()}"
-        
         super().save(*args, **kwargs)
 
     def generate_random_string(self, length=6):
@@ -86,8 +85,6 @@ class Thread(models.Model):
     def get_absolute_url(self):
         return reverse("forum:thread_detail", kwargs={"thread_slug": self.slug})
     
-
-
 
 class Comment(models.Model):
     DEFAULT_ANONYMOUS_USER_ID=2
@@ -112,3 +109,13 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Коментар від {self.author} до {self.thread}"
+    
+
+class Complaint(models.Model):
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='complaints')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Кто отправил жалобу
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Жалоба на комментарий {self.comment.id} от {self.user.username}"

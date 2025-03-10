@@ -19,24 +19,26 @@
                     <!-- Фильтр по стране -->
                     <div class="mb-3">
                         <label for="country-filter-mobile" class="form-label">Країна</label>
-                        <select class="form-select" id="country-filter-mobile" name="country">
-                            <option value="">Оберіть країну</option>
-                            <option value="ukraine">Україна</option>
-                            <option value="poland">Польща</option>
-                            <option value="germany">Німеччина</option>
-                            <option value="france">Франція</option>
+                        <select class="form-select" id="country-filter" name="country">
+                            <option value="" {% if not request.GET.country %}selected{% endif %}>Оберіть країну</option>
+                            {% for code, name in countries %}
+                                <option value="{{ code }}" {% if request.GET.country == code %}selected{% endif %}>
+                                    {{ name }}
+                                </option>
+                            {% endfor %}
                         </select>
                     </div>
                     
                     <!-- Фильтр по категории -->
                     <div class="mb-3">
                         <label for="category-filter-mobile" class="form-label">Категорія</label>
-                        <select class="form-select" id="category-filter-mobile" name="category">
-                            <option value="">Оберіть категорію</option>
-                            <option value="tech">Технології</option>
-                            <option value="travel">Подорожі</option>
-                            <option value="education">Освіта</option>
-                            <option value="sports">Спорт</option>
+                        <select class="form-select" id="category-filter" name="category">
+                            <option value="" {% if not request.GET.category %}selected{% endif %}>Оберіть категорію</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>
+                                    {{ cat.name }}
+                                </option>
+                            {% endfor %}
                         </select>
                     </div>
                     
@@ -59,11 +61,12 @@
                 <div class="mb-3">
                     <label for="country-filter" class="form-label">Країна</label>
                     <select class="form-select" id="country-filter" name="country">
-                        <option value="">Оберіть країну</option>
-                        <option value="ukraine">Україна</option>
-                        <option value="poland">Польща</option>
-                        <option value="germany">Німеччина</option>
-                        <option value="france">Франція</option>
+                        <option value="" {% if not request.GET.country %}selected{% endif %}>Оберіть країну</option>
+                        {% for code, name in countries %}
+                            <option value="{{ code }}" {% if request.GET.country == code %}selected{% endif %}>
+                                {{ name }}
+                            </option>
+                        {% endfor %}
                     </select>
                 </div>
                 
@@ -71,11 +74,12 @@
                 <div class="mb-3">
                     <label for="category-filter" class="form-label">Категорія</label>
                     <select class="form-select" id="category-filter" name="category">
-                        <option value="">Оберіть категорію</option>
-                        <option value="tech">Технології</option>
-                        <option value="travel">Подорожі</option>
-                        <option value="education">Освіта</option>
-                        <option value="sports">Спорт</option>
+                        <option value="" {% if not request.GET.category %}selected{% endif %}>Оберіть категорію</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                        {% endfor %}
                     </select>
                 </div>
                 
@@ -86,44 +90,73 @@
 </aside>
 
 <!-- Список тредов -->
-<main class="col-lg-9">
+<main class="col-lg-9 main-container">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">Список всіх тредів</h2>
-        <a href="#" class="btn btn-success d-none d-lg-inline-block">+ Створити тему</a>
+        <h2 class="mb-0">Список всіх тредів {{ page_title }}</h2>
+        <a href="{% url "forum:thread_create" %}" class="btn btn-success d-none d-lg-inline-block">+ Створити тему</a>
     </div>
     
     <!-- Кнопка для мобильной версии -->
-    <a href="#" class="btn btn-success btn-create-thread d-lg-none">+ Створити тему</a>
+    <a href="{% url "forum:thread_create" %}" class="btn btn-success btn-create-thread d-lg-none">+ Створити тему</a>
     
     <!-- Список тредов с отрывком -->
     <ul class="thread-list mt-3">
-        {% for thread in all_threads %}
-        <li class="thread-list-item">
-            <h3 class="thread-title">
-                <a href="{{thread.get_absolute_url}}">{{ thread.title }}</a>
-            </h3>
-            <p class="thread-meta">Опубліковано: {{ thread.created_at }} | Коментарів: {{ thread.comment_count }}</p>
-            <p class="thread-excerpt">
-                {{ thread.content|linebreaks|truncatewords:30 }}
-            </p>
-        </li>
+        {% for thread in page_obj %}
+            <li class="thread-list-item">
+                <h3 class="thread-title">
+                    <a href="{{thread.get_absolute_url}}">{{ thread.title }}</a>
+                </h3>
+                <p class="thread-meta">Опубліковано: {{ thread.created_at }} | Коментарів: {{ thread.comment_count }}</p>
+                <p class="thread-excerpt">
+                    {{ thread.content|linebreaks|truncatewords:15 }}
+                </p>
+            </li>
+        {% empty %}
+        <h3 class="thread-title">
+            Обговорень немае
+        </h3>
         {% endfor %}
     </ul>
     
     <!-- Пагинация -->
-    <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center">
-            <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1">Попередня</a>
-            </li>
-            <li class="page-item"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item">
-                <a class="page-link" href="#">Наступна</a>
-            </li>
-        </ul>
-    </nav>
+    <div class="pagination-wrapper">
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&country={{ request.GET.country }}&category={{ request.GET.category }}" tabindex="-1">Попередня</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">Попередня</a>
+                    </li>
+                {% endif %}
+
+                <!-- Страницы -->
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <a class="page-link" href="?page={{ num }}&country={{ request.GET.country }}&category={{ request.GET.category }}">{{ num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}&country={{ request.GET.country }}&category={{ request.GET.category }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&country={{ request.GET.country }}&category={{ request.GET.category }}">Наступна</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Наступна</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
 </main>
 
 

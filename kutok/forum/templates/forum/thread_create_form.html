@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Створити нову тему{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="text-center mb-4">Створити нову тему</h2>
+            <form method="post" class="card p-4 shadow-sm rounded">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                
+                <div class="mb-3">
+                    <label for="title" class="form-label">Назва обговорення</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.title.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="content" class="form-label">Текст обговорення</label>
+                    {{ form.content }}
+                    {% if form.content.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.content.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="category" class="form-label">Категорія</label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.category.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="country" class="form-label">Країна</label>
+                    {{ form.country }}
+                    {% if form.country.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.country.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Створити тему</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

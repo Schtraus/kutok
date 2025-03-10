@@ -1,7 +1,31 @@
-db.sqlite3
+# Python bytecode files
 *.pyc
+*.pyo
 __pycache__/
-/venv
-/static
-/media
+
+# Django
+*.log
+*.pot
+*.pyc
+*.pyo
+__pycache__/
+
+# Database
+db.sqlite3
+
+# Django migrations
+*/migrations/*
+
+# Temporary files
+tmp/
+*.swp
+
+# Virtual environment
+venv/
+.env/
+
+# IDEs and editors
+.vscode/
+.idea/
+mysite_data.json
 .env
