@@ -95,7 +95,7 @@ TEMPLATES = [
 
 # Путь к статическим файлам
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = '/app/staticfiles/'
 
 
 # Папка для хранения статических файлов на сервере (для production)
