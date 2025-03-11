@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'forum.apps.ForumConfig',
     'channels',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -179,3 +180,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'  # URL для доступа к файлам через браузер
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Папка на сервере для хранения файлов§
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://localhost",
+    "https://127.0.0.1:8000",
+    "https://rozmova.eu",
+    "https://www.rozmova.eu",
+]
+
+# SECURE_SSL_REDIRECT = True  # Перенаправлять все HTTP-запросы на HTTPS
+
+CSRF_COOKIE_SECURE = True  # Cookies передаются только по HTTPS
+CSRF_COOKIE_SAMESITE = 'Lax'  # Устанавливает SameSite флаг для CSRF cookie
+SESSION_COOKIE_SECURE = True  # Для сессий тоже
+SESSION_COOKIE_SAMESITE = 'Lax'  # SameSite флаг для session cookies

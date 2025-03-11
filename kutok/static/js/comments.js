@@ -155,9 +155,9 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("JavaScript загружен!");
     const threadSlug = document.getElementById('thread-slug').textContent.trim(); // Просто получаем текст
     const commentSocket = new WebSocket(
-        `ws://${window.location.host}/ws/thread/${threadSlug}/`
+        `wss://${window.location.host}/ws/thread/${threadSlug}/`
     );
-
+    console.log(window.location.host)
     commentSocket.onopen = function() {
         console.log("WebSocket connection established");
     };

@@ -1,3 +1,4 @@
+# Dockerfile
 FROM python:3.11-slim
 
 # Установим рабочую директорию
@@ -15,6 +16,10 @@ COPY . /app/
 
 # Копируем .env файл
 COPY .env /app/.env
+
+# Если это продакшн-среда, то собираем статику заранее
+ARG ENVIRONMENT
+RUN if [ "$ENVIRONMENT" = "production" ]; then python manage.py collectstatic --noinput; fi
 
 # Создаем директорию для статики
 RUN mkdir -p /app/staticfiles

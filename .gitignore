@@ -29,3 +29,6 @@ venv/
 .idea/
 mysite_data.json
 .env
+ssl/
+nginx.conf
+docker-compose.yml
