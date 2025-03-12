@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     commentSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        console.log("Received comment data:", data); // Для отладки
+        // console.log("Received comment data:", data); // Для отладки
         console.log("User data:", data.user); // Проверить доступность данных пользователя
 
         // Получаем контейнер для комментариев
@@ -175,6 +175,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Логика отображения кнопок для редактирования и удаления
         const isCurrentUserAuthor = data.is_author;  // Проверяем, является ли текущий пользователь автором комментария
+
+            // Для отладки
+        console.log(`is_current_user_author: ${isCurrentUserAuthor}`);
+        console.log(data.is_author);  // Проверка, правильно ли вычисляется автор
+        console.log(data.is_authenticated);  // Проверка, авторизован ли пользователь
+
 
 
         // Проверяем, есть ли данные о пользователе
@@ -191,8 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="text-muted small">— ${data.created_at}</span>
                     </div>
                     <div class="ms-auto">
-                        ${isUserAuthenticated ? `
-                            ${isCurrentUserAuthor ? `
+                        ${data.is_authenticated ? `
+                            ${data.is_author ? `
                                 <!-- Редактировать комментарий -->
                                 <a href="#" class="btn btn-warning btn-sm edit-comment" data-id="${data.id}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" viewBox="0 0 16 16">
@@ -222,6 +228,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p class="comment-content mb-0">${data.content}</p>
             </li>
         `;
+
+
 
 
 
