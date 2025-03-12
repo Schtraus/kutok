@@ -2,13 +2,13 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <!-- Логотип -->
-            <a class="navbar-brand" href="{% url 'forum:home' %}">
-                <img src="https://via.placeholder.com/150x50.png?text=Logo" alt="Logo" class="d-inline-block align-text-top">
+            <a class="navbar-brand logo-mini" href="{% url 'forum:home' %}">
+                <img src="/media/logos/logo-mini.webp" alt="Logo" class="d-inline-block align-text-top logo-mini">
             </a>
             
             <!-- Название сайта по центру -->
             <span class="navbar-text mx-auto text-white">
-                <a href="{% url 'forum:home' %}" class="text-decoration-none text-white fs-4">Мій Форум</a>
+                <a href="{% url 'forum:home' %}" class="text-decoration-none text-white fs-4">Rozmova.eu</a>
             </span>
             
             <!-- Бургер-меню для мобильных устройств -->
@@ -35,16 +35,6 @@
                     {% endif %} 
                 </div>
 
-                <!-- Фильтр по стране -->
-                <form class="d-flex">
-                    <select class="form-select" id="country-filter" aria-label="Select country">
-                        <option value="" selected>Оберіть країну</option>
-                        <option value="ukraine">Україна</option>
-                        <option value="poland">Польща</option>
-                        <option value="germany">Німеччина</option>
-                        <option value="france">Франція</option>
-                    </select>
-                </form>
             </div>
         </div>
     </nav>

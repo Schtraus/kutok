@@ -32,3 +32,4 @@ mysite_data.json
 ssl/
 nginx.conf
 docker-compose.yml
+staticfiles/
