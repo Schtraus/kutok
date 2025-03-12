@@ -87,16 +87,12 @@ class Thread(models.Model):
     
 
 class Comment(models.Model):
-    DEFAULT_ANONYMOUS_USER_ID=2
 
     thread = models.ForeignKey(
         'Thread', on_delete=models.CASCADE, 
         related_name='comments', verbose_name="Обговорення"
     )
-    author = models.ForeignKey(
-    settings.AUTH_USER_MODEL, on_delete=models.SET_DEFAULT, 
-    default=DEFAULT_ANONYMOUS_USER_ID, verbose_name="Автор", 
-    null=True, blank=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Автор")
 
     content = models.TextField(verbose_name="Коментар")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
