@@ -164,8 +164,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     commentSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        // console.log("Received comment data:", data); // Для отладки
+        console.log("Received comment data:", data); // Для отладки
         console.log("User data:", data.user); // Проверить доступность данных пользователя
+        console.log("Received is_authenticated:", data.is_authenticated); // Должно быть true или false
+        console.log(data.is_author); 
 
         // Получаем контейнер для комментариев
         const commentContainer = document.getElementById('comments-container');
@@ -175,18 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Логика отображения кнопок для редактирования и удаления
         const isCurrentUserAuthor = data.is_author;  // Проверяем, является ли текущий пользователь автором комментария
-
-            // Для отладки
-        console.log(`is_current_user_author: ${isCurrentUserAuthor}`);
-        console.log(data.is_author);  // Проверка, правильно ли вычисляется автор
-        console.log(data.is_authenticated);  // Проверка, авторизован ли пользователь
-
-
-
-        // Проверяем, есть ли данные о пользователе
-        if (data.user) {
-            console.log("User is authenticated:", data.user.is_authenticated);
-        }
 
         // Формируем новый комментарий
         const newComment = `

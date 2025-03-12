@@ -149,8 +149,8 @@ class CommentConsumer(AsyncWebsocketConsumer):
                     'created_at': comment.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                     'id': comment.id,
                     'comment_count': comment_count,  # Отправка количества комментариев
-                    'is_author': comment.author == self.scope.get('user', None),  # Проверка, является ли пользователь автором
-                    'is_authenticated': self.scope['user'].is_authenticated if self.scope['user'] else False,  # Проверка, авторизован ли пользователь
+                    'is_author': comment.author == self.scope['user'] if self.scope['user'].is_authenticated else False,  # Проверка, является ли пользователь автором
+                    'is_authenticated': self.scope['user'].is_authenticated,  # Проверка, авторизован ли пользователь
                 }
             )
 
