@@ -5,7 +5,8 @@ services:
     command: daphne -b 0.0.0.0 -p 8000 kutok.asgi:application
     volumes:
       - .:/app
-      - ./static:/app/staticfiles
+      - ./static:/app/static  # Монтируем исходные файлы в /app/static
+      - ./staticfiles:/app/staticfiles  # Монтируем собранные файлы в /app/staticfiles
       - ./media:/app/mediafiles
     expose:
       - "8000"
@@ -24,7 +25,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx.prod.conf:/etc/nginx/nginx.conf
-      - ./static:/app/staticfiles
+      - ./staticfiles:/app/staticfiles  # НГИНКС обслуживает только собранные статические файлы
       - ./media:/app/mediafiles
       - ./ssl:/etc/ssl  # Папка с твоими сертификатами
     depends_on:
