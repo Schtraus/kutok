@@ -137,7 +137,7 @@ class CommentConsumer(AsyncWebsocketConsumer):
             comment_count = await sync_to_async(thread.comments.count)()
 
             # Проверка, является ли текущий пользователь автором комментария
-            is_author = author == comment.author
+            # is_author = author == comment.author
 
             # Отправка комментария в группу
             await self.channel_layer.group_send(
@@ -149,7 +149,7 @@ class CommentConsumer(AsyncWebsocketConsumer):
                     'created_at': comment.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                     'id': comment.id,
                     'comment_count': comment_count,  # Отправка количества комментариев
-                    'is_author': is_author,  # Передаем информацию о том, является ли пользователь автором
+                    'is_author': comment.author == self.scope.get('user'),  # Передаем информацию о том, является ли пользователь автором
                     'is_authenticated': self.scope['user'].is_authenticated,  # Проверяем, авторизован ли пользователь
                 }
             )
