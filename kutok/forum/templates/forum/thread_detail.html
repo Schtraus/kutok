@@ -48,7 +48,7 @@
             <!-- Список комментариев -->
             <section class="comments">
                 <h2 class="h5 mb-4" id="commentCount" >Коментарі ({{comments.count}})</h2>
-                {% if comments %}
+                {% comment %} {% if comments %} {% endcomment %}
                     <ul class="list-group" id="comments-container">
                         {% for comment in comments %}
                             <li class="list-group-item" id="comment-{{ comment.id }}">
@@ -91,9 +91,9 @@
                             </li>
                         {% endfor %}
                     </ul>
-                {% else %}
+                {% comment %} {% else %}
                     <p>Коментарів поки немає. Будьте першим!</p>
-                {% endif %}
+                {% endif %} {% endcomment %}
             </section>
         </div>
 
