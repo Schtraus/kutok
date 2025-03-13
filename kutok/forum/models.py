@@ -16,7 +16,7 @@ class Country(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True, verbose_name="Назва категорії")
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="URL категорії")
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="URL категорії", blank=True)
     description = models.TextField(blank=True, null=True, verbose_name="Опис категорії")
     image = models.ImageField(upload_to='categories/', blank=True, null=True, verbose_name="Зображення категорії")
     is_active = models.BooleanField(default=True, verbose_name="Активна категорія")

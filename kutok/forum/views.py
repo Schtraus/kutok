@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy
-from .models import Category, Complaint, Thread, Comment
+from .models import Category, Complaint, Thread, Comment, Country
 from django.db.models import Count
 from django.core.paginator import Paginator
 from django.contrib import messages
@@ -16,104 +16,161 @@ from django.views.decorators.http import require_POST
 import json
 
 
+from django.db.models import Count
+from django.shortcuts import render
+from .models import Category
+
 def home(request):
-    all_categories = Category.objects.all()
+    # Получаем все категории с подкатегориями, тредами и комментариями
+    all_categories = Category.objects.all().prefetch_related(
+        # Для каждой категории подкатегории
+        'subcategories',
+        # Для каждой подкатегории треды
+        'subcategories__threads',
+        # Для каждого треда комментарии
+        'subcategories__threads__comments'
+    )
+
+    # Подсчитываем количество тредов и комментариев для каждой подкатегории
+    for category in all_categories:
+        for subcategory in category.subcategories.all():
+            # Количество тредов в подкатегории
+            subcategory.threads_count = subcategory.threads.count()
+            # Количество комментариев для всех тредов подкатегории
+            subcategory.comments_count = subcategory.threads.aggregate(
+                total_comments=Count('comments')
+            )['total_comments']
+    
+    # Получаем последние обсуждения
     last_threads = Thread.objects.order_by('-created_at')[:7]
     
     data = {
         'all_categories': all_categories,
         'last_threads': last_threads,
     }
+    
     return render(request, 'forum/home.html', context=data)
 
-# def thread_detail(request, thread_slug):
-#     thread = get_object_or_404(Thread, slug=thread_slug)
 
-#     data = {
-#         'thread': thread,
-#     }
-#     return render(request, 'forum/thread_detail.html', context=data)
 
 
 # def thread_list(request):
-    country = request.GET.get('country')
-    category_slug = request.GET.get('category')
-    threads = Thread.objects.filter(is_active=True)
+#     country = request.GET.get('country')
+#     category_slug = request.GET.get('category')
+#     query = request.GET.get('q')  # Новый параметр для поиска
+#     threads = Thread.objects.filter(is_active=True)
 
-    if country:
-        threads = threads.filter(country=country)
-    if category_slug:
-        threads = threads.filter(category__slug=category_slug)
+#     if query:
+#         threads = threads.filter(
+#             Q(title__icontains=query) | Q(content__icontains=query)
+#         )
     
-    categories = Category.objects.filter(is_active=True)
+#     if country:
+#         threads = threads.filter(country=country)
+#     if category_slug:
+#         threads = threads.filter(category__slug=category_slug)
+    
+#     categories = Category.objects.filter(is_active=True)
 
-    paginator = Paginator(threads, 5)  # 10 - количество элементов на странице
+#     paginator = Paginator(threads, 5)  # 5 - количество элементов на странице
 
-    # Получаем номер текущей страницы из GET-параметров
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+#     page_number = request.GET.get('page')
+#     page_obj = paginator.get_page(page_number)
 
-    if category_slug:
-        category = Category.objects.get(slug=category_slug)
-        page_title = f'{category.name}'
-    else:
-        page_title = "Список всіх обговорень"
+#     if category_slug:
+#         category = Category.objects.get(slug=category_slug)
+#         page_title = f'{category.name}'
+#     else:
+#         page_title = "Список всіх обговорень"
+    
+#     # Добавляем к названию страницы текст поиска, если запрос был
+#     if query:
+#         page_title = f'Результати пошуку для "{query}"'
 
-    return render(request, 'forum/thread_list.html', {
-        'threads': threads,
-        'categories': categories,
-        'countries': COUNTRIES,
-        'page_title': page_title,
-        'page_obj': page_obj,
-    })
+#     return render(request, 'forum/thread_list.html', {
+#         'threads': threads,
+#         'categories': categories,
+#         'countries': None,
+#         'page_title': page_title,
+#         'page_obj': page_obj,
+#     })
 
-    # all_threads = Thread.objects.annotate(comment_count=Count('comments'))
 
-    # data = {
-    #     'all_threads': all_threads
-    # }
-    # return render(request, 'forum/thread_list.html', context=data)
+from django.shortcuts import render
+from django.db.models import Count
+from django.core.paginator import Paginator
+from .models import Thread, Country, Category
+
 
 def thread_list(request):
-    country = request.GET.get('country')
-    category_slug = request.GET.get('category')
-    query = request.GET.get('q')  # Новый параметр для поиска
-    threads = Thread.objects.filter(is_active=True)
+    country_code = request.GET.get('country')  # Код страны
+    category_slug = request.GET.get('category')  # Слаг категории
+    search_query = request.GET.get('q', '') # Поисковой запрос
 
-    if query:
+    # Начальная выборка всех активных тредов, сортировка от новых к старым
+    threads = Thread.objects.filter(is_active=True).order_by('-created_at')
+
+    # Фильтрация по поисковому запросу (по заголовку и контенту)
+    if search_query:
         threads = threads.filter(
-            Q(title__icontains=query) | Q(content__icontains=query)
+            Q(title__icontains=search_query) | Q(content__icontains=search_query)
         )
-    
-    if country:
-        threads = threads.filter(country=country)
+
+    # Получаем все страны для фильтра
+    countries = Country.objects.all()
+
+    # Фильтрация по стране (если передан код страны)
+    country_obj = None
+    if country_code:
+        try:
+            country_obj = Country.objects.get(code=country_code)
+            threads = threads.filter(country=country_obj)
+        except Country.DoesNotExist:
+            pass  # Если страна не найдена, фильтрация не происходит
+
+    # Фильтрация по категории и её подкатегориям
+    category = None
     if category_slug:
-        threads = threads.filter(category__slug=category_slug)
-    
+        try:
+            category = Category.objects.get(slug=category_slug)
+            # Получаем все подкатегории этой категории
+            subcategories = category.subcategories.all()
+            threads = threads.filter(category__in=[category] + list(subcategories))
+        except Category.DoesNotExist:
+            pass  # Если категория не найдена, фильтрация по ней не происходит
+
+    # Добавляем аннотацию для подсчёта комментариев
+    threads = threads.annotate(comments_count=Count('comments'))
+
+    # Все активные категории для отображения в фильтре
     categories = Category.objects.filter(is_active=True)
 
-    paginator = Paginator(threads, 5)  # 5 - количество элементов на странице
-
+    # Пагинация
+    paginator = Paginator(threads, 2)  # 5 тредов на страницу
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    if category_slug:
-        category = Category.objects.get(slug=category_slug)
-        page_title = f'{category.name}'
+    # Заголовок страницы в зависимости от фильтрации
+    if category and country_obj:
+        page_title = f'Обговорення за категорією: {category.name} | Країна: {country_obj.name}'
+    elif category:
+        page_title = f'Обговорення за категорією: {category.name}'
+    elif country_obj:
+        page_title = f'Обговорення за країною: {country_obj.name}'
     else:
         page_title = "Список всіх обговорень"
-    
-    # Добавляем к названию страницы текст поиска, если запрос был
-    if query:
-        page_title = f'Результати пошуку для "{query}"'
 
     return render(request, 'forum/thread_list.html', {
         'threads': threads,
         'categories': categories,
-        'countries': None,
+        'countries': countries,
         'page_title': page_title,
         'page_obj': page_obj,
+        'search_query': search_query,
     })
+
+
+
 
 def category_list(request):
     all_categories = all_categories = Category.objects.all()

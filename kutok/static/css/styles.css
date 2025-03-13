@@ -3,6 +3,19 @@ html, body {
     height: 100%;
 }
 
+body {
+    background-color: #f8f9fa;
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    line-height: 1.6; /* Для лучшей читаемости */
+}
+h1, h2, h3, h4, h5, h6,
+button, input, textarea, select,
+a {
+    font-family: 'Inter', sans-serif;
+}
+
 main {
     min-height: calc(100vh - 200px); /* Разделить высоту на основной контент и футер */
 }
@@ -62,19 +75,19 @@ body {
     background-color: #f8f9fa;
 }
 
-.filters {
+/* .filters {
     position: sticky;
     top: 20px;
-}
+} */
 
-.filters h5 {
+/* .filters h5 {
     color: #333;
-}
+} */
 
-.filters select {
+/* .filters select {
     border-radius: 4px;
     font-size: 14px;
-}
+} */
 
 .thread-list {
     list-style: none;
@@ -118,6 +131,11 @@ body {
 @media (max-width: 768px) {
     .filters {
         display: none;
+    }
+
+    /* Кнопка для открытия фильтров */
+    .btn-primary.w-100 {
+        display: block; /* Показать кнопку для мобильной версии */
     }
 
     .btn-create-thread {
@@ -175,3 +193,90 @@ body {
     max-height: 100%; /* Чтобы не выходил за границы навбара */
     object-fit: contain; /* Убедимся, что логотип не обрезается */
 }
+
+
+
+/* СПИСОК КАТЕГОРИЙ НА ГЛАВНОЙ СТРАНИЦЕ */
+
+.category-tree .list-group-item {
+    transition: all 0.3s ease;
+}
+
+.category-tree .list-group-item:hover {
+    transform: translateY(-5px); /* Легкий подъем при наведении */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Тень при наведении */
+}
+
+.category-tree .category-name {
+    transition: color 0.3s ease;
+}
+
+.category-tree .category-name:hover {
+    color: #007bff; /* Цвет текста при наведении */
+}
+
+.category-tree .list-group-item .btn-secondary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.category-tree .list-group-item .btn-secondary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.category-tree .category-image {
+    border: 2px solid #007bff; /* Обводка для изображений */
+}
+
+.category-tree .category-image:hover {
+    transform: scale(1.1); /* Увеличение изображения при наведении */
+}
+
+.category-tree .collapse {
+    transition: max-height 0.5s ease-in-out;
+}
+
+.category-image {
+    width: 40px; /* Фиксированный размер */
+    height: 40px; /* Фиксированный размер */
+    object-fit: cover; /* Обрезаем изображение, чтобы оно сохраняло пропорции */
+    border-radius: 50%; /* Круглая форма изображения */
+}
+
+.list-group-item {
+    padding: 15px;
+}
+
+.btn-sm {
+    font-size: 16px;
+}
+
+.collapse {
+    transition: height 0.3s ease;
+}
+
+.me-3 {
+    margin-right: 1rem;
+}
+
+.ms-2 {
+    margin-left: 0.5rem;
+}
+
+
+/*^^^^^^^^^^^ СПИСОК КАТЕГОРИЙ НА ГЛАВНОЙ СТРАНИЦЕ ^^^^^^^^^^^*/
+
+
+
+
+.btn-custom {
+    width: 100%; /* На мобильных устройствах будет растягиваться */
+}
+
+@media (min-width: 576px) {
+    .btn-custom {
+        width: auto; /* На экранах sm и больше кнопка будет по размеру текста */
+    }
+}
+

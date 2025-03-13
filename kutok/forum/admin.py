@@ -4,18 +4,13 @@ from .models import Category, Thread, Comment, Complaint, Country
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'is_active')
-    prepopulated_fields = {'slug': ('name',)}
-    search_fields = ('name',)
-    list_filter = ('is_active',)
+    list_display = ('name', 'slug', 'parent', 'is_active')  # Добавляем поле parent в список отображаемых
+    list_filter = ('is_active', 'parent')  # Добавляем фильтрацию по родительской категории
+    search_fields = ('name',)  # Добавляем поиск по имени и slug категории
+    ordering = ('name',)
 
-
-# @admin.register(Subcategory)
-# class SubcategoryAdmin(admin.ModelAdmin):
-#     list_display = ('name', 'slug', 'category', 'is_active')
-#     prepopulated_fields = {'slug': ('name',)}
-#     search_fields = ('name', 'category__name')
-#     list_filter = ('category', 'is_active')
+    # Чтобы поле parent отображалось в форме создания/редактирования
+    fields = ('name', 'slug', 'description', 'image', 'is_active', 'parent')  # Указываем порядок полей
 
 
 @admin.register(Country)
