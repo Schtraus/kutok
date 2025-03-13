@@ -182,6 +182,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Папка на сервере �
 
 CSRF_TRUSTED_ORIGINS = [
     "https://localhost",
+    "http://127.0.0.1:8000",
     "https://127.0.0.1:8000",
     "https://rozmova.eu",
     "https://www.rozmova.eu",

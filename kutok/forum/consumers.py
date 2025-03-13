@@ -106,6 +106,27 @@ class CommentConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
+    # async def connect(self):
+    #     self.user = self.scope.get('user')  # Доступ к пользователю из scope
+    #     self.thread_slug = self.scope['url_route']['kwargs']['thread_slug']
+    #     self.room_group_name = f"thread_{self.thread_slug}"
+
+    #     # Присоединение к группе
+    #     await self.channel_layer.group_add(
+    #         self.room_group_name,
+    #         self.channel_name
+    #     )
+
+    #     # Отправляем информацию о том, авторизован ли пользователь
+    #     is_authenticated = self.user.is_authenticated
+    #     await self.accept()
+
+    #     # Можем отправить это значение на фронтенд, чтобы корректно рендерить шаблон
+    #     await self.send(text_data=json.dumps({
+    #         'is_authenticated': is_authenticated
+    #     }))
+
+
     async def disconnect(self, close_code):
         # Отключение от группы
         await self.channel_layer.group_discard(

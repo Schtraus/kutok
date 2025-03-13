@@ -173,10 +173,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const commentContainer = document.getElementById('comments-container');
 
        // Проверяем, что текущий пользователь авторизован
-        const isUserAuthenticated = data.is_authenticated;
+        // const isUserAuthenticated = data.is_authenticated;
 
-        // Логика отображения кнопок для редактирования и удаления
-        const isCurrentUserAuthor = data.is_author;  // Проверяем, является ли текущий пользователь автором комментария
+        // // Логика отображения кнопок для редактирования и удаления
+        // const isCurrentUserAuthor = data.is_author;  // Проверяем, является ли текущий пользователь автором комментария
 
         // Формируем новый комментарий
         const newComment = `

@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy
-from .models import Category, Complaint, Thread, Comment, COUNTRIES
+from .models import Category, Complaint, Thread, Comment
 from django.db.models import Count
 from django.core.paginator import Paginator
 from django.contrib import messages
@@ -110,7 +110,7 @@ def thread_list(request):
     return render(request, 'forum/thread_list.html', {
         'threads': threads,
         'categories': categories,
-        'countries': COUNTRIES,
+        'countries': None,
         'page_title': page_title,
         'page_obj': page_obj,
     })
