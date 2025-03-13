@@ -11,6 +11,8 @@ class CategoryAdmin(admin.ModelAdmin):
 
     # Чтобы поле parent отображалось в форме создания/редактирования
     fields = ('name', 'slug', 'description', 'image', 'is_active', 'parent')  # Указываем порядок полей
+    # Добавляем автоматическое заполнение слага
+    prepopulated_fields = {'slug': ('name',)} 
 
 
 @admin.register(Country)
