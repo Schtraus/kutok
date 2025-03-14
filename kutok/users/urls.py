@@ -39,4 +39,7 @@ urlpatterns = [
     path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('password-reset/<uidb64>/<token>/', views.CustomPasswordConfirmView.as_view(), name='password_reset_confirm'),
     path('password-reset/complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
+    # Пути allauth (Google, другие соцсети и стандартные вещи)
+    # path('accounts/', include('allauth.urls')),
 ]

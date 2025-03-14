@@ -24,6 +24,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('forum.urls')),
     path('', include('users.urls')),
+    # Пути allauth (Google, другие соцсети и стандартные вещи)
+    path('accounts/', include('allauth.urls')),
 ]
 
 if settings.DEBUG:

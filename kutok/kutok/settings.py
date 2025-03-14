@@ -34,6 +34,37 @@ EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
 
+SITE_ID = env('SITE_ID', cast=int)
+
+# Настройки аутентификации
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # Верификация email обязательна
+ACCOUNT_AUTHENTICATED_REDIRECT_URL = '/'  # Страница, на которую перенаправляется пользователь после логина
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+
+# Настройки для социальных аккаунтов
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_QUERY_EMAIL = True  # Запрос email при аутентификации через социальную сеть
+
+SOCIAL_AUTH_GOOGLE_CLIENT_ID = env('SOCIAL_AUTH_GOOGLE_CLIENT_ID')
+SOCIAL_AUTH_GOOGLE_SECRET = env('SOCIAL_AUTH_GOOGLE_SECRET')
+
+SOCIAL_AUTH_GOOGLE_SCOPE = ['openid', 'profile', 'email']
+
+# Настройка редиректа после авторизации
+SOCIALACCOUNT_LOGIN_ON_SIGNUP = True  # Автоматически логиним пользователя после регистрации
+SOCIALACCOUNT_SIGNUP_REDIRECT_URL = '/'  # Куда редиректить после успешной регистрации
+
+# Пример настроек для Google (добавление дополнительных данных)
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],  # Права доступа
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'OAUTH_PKCE_ENABLED': True,  # Включение PKCE для безопасности
+    }
+}
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -60,9 +91,15 @@ INSTALLED_APPS = [
     'forum.apps.ForumConfig',
     'channels',
     'django_extensions',
+    'django.contrib.sites',  # Важно для allauth
+    'allauth',                # Само приложение allauth
+    'allauth.account',        # Модуль для учётных записей
+    'allauth.socialaccount',  # Модуль для социальных аккаунтов
+    'allauth.socialaccount.providers.google',  # Провайдер Google
 ]
 
 MIDDLEWARE = [
+    'allauth.account.middleware.AccountMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -130,6 +167,12 @@ CHANNEL_LAYERS = {
 #         'PASSWORD': 'Grekovinka322',
 #     }
 # }
+
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Обычная аутентификация
+    'allauth.account.auth_backends.AuthenticationBackend',  # Аутентификация через соцсети
+]
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'

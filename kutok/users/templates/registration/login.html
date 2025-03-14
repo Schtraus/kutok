@@ -55,9 +55,14 @@
                 </div>
             </form>
             <div class="text-center mt-4">
-                <p>Або увійдіть через:</p>
-                <button class="btn btn-danger w-100 mb-2">Увійти через Google</button>
-                <button class="btn btn-primary w-100">Увійти через Facebook</button>
+                <p>Або увійдіть через:</p>         
+                <form method="post" action="{% url 'google_login' %}" class="text-center">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger w-100 mb-2">
+                            Продовжити з Google
+                    </button>
+                </form>
+                {% comment %} <button class="btn btn-primary w-100">Увійти через Facebook</button> {% endcomment %}
             </div>
         </div>
     </div>

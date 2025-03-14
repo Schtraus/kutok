@@ -12,7 +12,7 @@ from django.contrib.auth import authenticate
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(
-        label="username",
+        label="Ім'я користувача",
         required=True,
         widget=forms.TextInput(attrs={
             'class': 'form-control',

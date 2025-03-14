@@ -62,15 +62,22 @@
                 {% if messages %}
                     <ul>
                         {% for message in messages %}
-                            <li>{{ message }}</li>
+                            {% if message.tags == "custom" %}
+                                <li>{{ message }}</li>
+                            {% endif %}
                         {% endfor %}
                     </ul>
                 {% endif %}
             </form>
             <div class="text-center mt-4">
                 <p>Або зареєструйтеся через:</p>
-                <button class="btn btn-danger w-100 mb-2">Зареєструватися через Google</button>
-                <button class="btn btn-primary w-100">Зареєструватися через Facebook</button>
+                <form method="post" action="{% url 'google_login' %}" class="text-center">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger w-100 mb-2">
+                            Продовжити з Google
+                    </button>
+                </form>
+                {% comment %} <button class="btn btn-primary w-100">Зареєструватися через Facebook</button> {% endcomment %}
             </div>
         </div>
     </div>

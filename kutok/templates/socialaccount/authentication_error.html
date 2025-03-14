@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Помилка авторизації</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+        .error-container {
+            text-align: center;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .error-icon {
+            font-size: 50px;
+            color: #dc3545;
+        }
+        h1 {
+            font-size: 28px;
+            color: #343a40;
+        }
+        p {
+            font-size: 18px;
+            color: #6c757d;
+        }
+        .btn-home {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 18px;
+            color: #ffffff;
+            background-color: #007bff;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-home:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">❌</div>
+        <h1>Помилка під час спроби входу</h1>
+        <p>Виникла проблема під час входу через ваш сторонній акаунт.</p>
+        {% if auth_error %}
+            <p><strong>Код помилки:</strong> {{ auth_error.code }}</p>
+            <p><strong>Опис:</strong> {{ auth_error.exception }}</p>
+        {% endif %}
+        <a href="{% url 'forum:home' %}" class="btn-home">На головну</a>
+    </div>
+</body>
+</html>
