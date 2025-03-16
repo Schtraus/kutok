@@ -1,0 +1,56 @@
+/* body {
+
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    line-height: 1.6;
+} */
+
+/* h1, h2, h3, h4, h5, h6,
+button, input, textarea, select,
+a {
+    font-family: 'Inter', sans-serif;
+} */
+
+body {
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+html, body {
+    height: 100%; /* Гарантируем, что body занимает всю высоту экрана */
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar {
+    margin-bottom: 0; /* Убираем отступ снизу */
+    margin-top: 0; /* Убираем отступ сверху */
+}
+
+main {
+    flex: 1; /* Занимает всю доступную высоту, отодвигая футер вниз */
+}
+
+footer {
+    width: 100%;
+    background-color: #343a40;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+}
+
+
+
+/* СПИСОК КАТЕГОРИЙ НА ГЛАВНОЙ СТРАНИЦЕ */
+
+
+
+/*^^^^^^^^^^^ СПИСОК КАТЕГОРИЙ НА ГЛАВНОЙ СТРАНИЦЕ ^^^^^^^^^^^*/
+
+
+
+
+
+

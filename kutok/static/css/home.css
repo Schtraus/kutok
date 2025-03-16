@@ -1,0 +1,87 @@
+@media (max-width: 768px) {
+
+    .thread-list .card {
+        margin-bottom: 0rem;
+    }
+
+    .thread-list .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .category-tree .list-group-item {
+        padding: 8px; /* Уменьшаем отступы внутри блока подкатегории */
+    }
+
+    .category-tree .list-group-item .d-flex {
+        align-items: flex-start; /* Выравниваем элементы по верхнему краю */
+    }
+
+    .category-tree .list-group-item img {
+        width: 40px; /* Увеличиваем размер картинки */
+        height: 40px;
+        margin-right: 10px; /* Отступ справа от картинки */
+    }
+
+    .category-tree .list-group-item .text-muted {
+        margin-top: 4px; /* Уменьшаем отступ сверху для количества тем/комментариев */
+        margin-left: 0; /* Сдвигаем количество тем/комментариев влево */
+    }
+
+    .thread-list .btn {
+        width: 100%; /* Растягиваем кнопки на всю ширину */
+    }
+
+    .thread-list .btn-primary {
+        margin-bottom: 10px; /* Отступ между кнопками */
+    }
+}
+
+/* Стили для больших экранов */
+@media (min-width: 769px) {
+    .category-tree .list-group-item .text-muted {
+        margin-left: auto; /* Количество тем/комментариев справа */
+    }
+
+    .thread-list .d-grid {
+        display: flex; /* Кнопки в строку на больших экранах */
+        gap: 10px; /* Отступ между кнопками */
+    }
+
+    .thread-list .btn {
+        width: auto; /* Ширина кнопок по содержимому */
+    }
+
+    .thread-list .card {
+        border: none;
+        border-radius: 8px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .thread-list .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .thread-list .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .thread-list .card-text {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .thread-list .card-text i {
+        margin-right: 0.3rem;
+    }
+    
+    /* Стили для кнопок */
+    .thread-list .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+    }
+}

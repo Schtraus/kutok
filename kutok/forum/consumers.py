@@ -95,8 +95,8 @@ logger = logging.getLogger(__name__)
 
 class CommentConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.thread_slug = self.scope['url_route']['kwargs']['thread_slug']
-        self.room_group_name = f"thread_{self.thread_slug}"
+        self.thread_id = self.scope['url_route']['kwargs']['thread_id']
+        self.room_group_name = f"thread_{self.thread_id}"
 
         # Присоединение к группе
         await self.channel_layer.group_add(
@@ -105,27 +105,6 @@ class CommentConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
-
-    # async def connect(self):
-    #     self.user = self.scope.get('user')  # Доступ к пользователю из scope
-    #     self.thread_slug = self.scope['url_route']['kwargs']['thread_slug']
-    #     self.room_group_name = f"thread_{self.thread_slug}"
-
-    #     # Присоединение к группе
-    #     await self.channel_layer.group_add(
-    #         self.room_group_name,
-    #         self.channel_name
-    #     )
-
-    #     # Отправляем информацию о том, авторизован ли пользователь
-    #     is_authenticated = self.user.is_authenticated
-    #     await self.accept()
-
-    #     # Можем отправить это значение на фронтенд, чтобы корректно рендерить шаблон
-    #     await self.send(text_data=json.dumps({
-    #         'is_authenticated': is_authenticated
-    #     }))
-
 
     async def disconnect(self, close_code):
         # Отключение от группы
@@ -145,7 +124,7 @@ class CommentConsumer(AsyncWebsocketConsumer):
                 return  # Если контент пустой, не отправлять комментарий
 
             author = self.scope['user']
-            thread = await sync_to_async(Thread.objects.get)(slug=self.thread_slug)
+            thread = await sync_to_async(Thread.objects.get)(id=self.thread_id)
 
             # Создание нового комментария
             comment = await sync_to_async(Comment.objects.create)(
@@ -156,9 +135,6 @@ class CommentConsumer(AsyncWebsocketConsumer):
 
             # Получение нового количества комментариев
             comment_count = await sync_to_async(thread.comments.count)()
-
-            # Проверка, является ли текущий пользователь автором комментария
-            # is_author = author == comment.author
 
             # Отправка комментария в группу
             await self.channel_layer.group_send(
@@ -183,6 +159,10 @@ class CommentConsumer(AsyncWebsocketConsumer):
 
     async def send_comment(self, event):
         try:
+             # Добавляем информацию о текущем пользователе
+            current_user = self.scope['user']
+            event['current_user_authenticated'] = current_user.is_authenticated
+            event['current_user_is_author'] = event['author'] == current_user.username
             await self.send(text_data=json.dumps({
                 'id': event['id'],
                 'author': event['author'],
@@ -191,6 +171,8 @@ class CommentConsumer(AsyncWebsocketConsumer):
                 'comment_count': event['comment_count'],
                 'is_author': event['is_author'],  # Получаем информацию о том, является ли пользователь автором
                 'is_authenticated': event['is_authenticated'],  # Получаем информацию о том, авторизован ли пользователь
+                'current_user_authenticated': event['current_user_authenticated'],  # Информация о текущем пользователе
+                'current_user_is_author': event['current_user_is_author'],  # Информация о текущем пользователе
             }))
         except Exception as e:
             logger.error(f"Error in send_comment method: {e}")

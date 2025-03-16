@@ -3,5 +3,5 @@ from . import consumers  # Импортируем ваш WebSocket-консью�
 
 websocket_urlpatterns = [
     # В этот путь будет подключаться WebSocket
-    re_path(r'ws/thread/(?P<thread_slug>[-\w]+)/$', consumers.CommentConsumer.as_asgi()),
+    re_path(r'ws/thread/(?P<thread_id>\d+)/$', consumers.CommentConsumer.as_asgi()),
 ]

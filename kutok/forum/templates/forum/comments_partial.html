@@ -1,0 +1,32 @@
+<!-- forum/comments_partial.html -->
+{% for comment in comments %}
+<li class="list-group-item mb-3 p-3 shadow-sm rounded" id="comment-{{ comment.id }}">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <strong>{{ comment.author.username }}</strong>
+            <span class="text-muted small">— {{ comment.created_at|date:"d M Y H:i" }}</span>
+        </div>
+
+        <div class="ms-auto">
+            {% if comment.author == user %}
+                <!-- Редактировать комментарий -->
+                <a href="#" class="btn btn-warning btn-sm edit-comment">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <!-- Удалить комментарий -->
+                <a href="#" class="btn btn-danger btn-sm delete-comment" data-id="{{ comment.id }}">
+                    <i class="bi bi-trash"></i>
+                </a>
+            {% elif user.is_authenticated %}
+                <!-- Пожаловаться на комментарий -->
+                <a href="#" class="btn btn-danger btn-sm report-comment" data-id="{{ comment.id }}">
+                    <i class="bi bi-flag"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Комментарий -->
+    <p class="comment-content mb-0 mt-2">{{ comment.content|linebreaksbr }}</p>
+</li>
+{% endfor %}

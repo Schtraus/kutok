@@ -1,68 +1,89 @@
 {% extends "base.html" %}
 
 {% block title %}Форум для {% endblock title %}
-
+{% load static %}
 {% block content %}
 
- <!-- Описание сайта -->
- <section class="site-description py-5 bg-light">
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+
+<!-- Описание сайта -->
+<section class="site-description py-5 bg-light">
     <div class="container text-center">
         <h2>Чому варто приєднатися до нашого форуму?</h2>
         <p class="lead">Це місце, де українці, які знаходяться в Європі, можуть обмінюватися досвідом, знаходити підтримку та допомогу, а також знайомитись з новими людьми. Обговорюйте новини, життя в Європі, отримуйте поради та знайомтесь з іншими.</p>
     </div>
 </section>
 
-
-    <section class="category-tree py-5">
-        <div class="container">
-            <h2 class="mb-3">Категорії</h2>
-            <ul class="list-group">
-                {% for category in all_categories %}
-                    {% if category.subcategories.exists %}
-                        <li class="list-group-item rounded shadow-sm mb-3" style="background-color: #f8f9fa; transition: all 0.3s ease;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <a href="/threads/?category={{ category.slug }}" class="text-decoration-none text-dark d-flex align-items-center" style="font-size: 1.2rem; font-weight: 600; color: #333;">
-                                    <span class="category-name">{{ category.name }}</span>
-                                </a>
-                                <button class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#category-{{ category.slug }}">
-                                    <i class="bi bi-chevron-down"></i>
-                                </button>
+<!-- Категории -->
+<section class="category-tree py-5">
+    <div class="container">
+        <h2 class="mb-3">Категорії</h2>
+        <ul class="list-group">
+            {% for category in all_categories %}
+                {% if category.subcategories.exists %}
+                    <li class="list-group-item rounded shadow-sm mb-3" style="background-color: #f8f9fa; transition: all 0.3s ease;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center w-100" data-bs-toggle="collapse" data-bs-target="#category-{{ category.slug }}">
+                                <span class="category-name" style="font-size: 1.2rem; font-weight: 600; color: #333; cursor: pointer;">{{ category.name }}</span>
                             </div>
-    
-                            <ul id="category-{{ category.slug }}" class="collapse list-group mt-2">
-                                {% for subcategory in category.subcategories.all %}
-                                    <li class="list-group-item d-flex justify-content-start align-items-center py-2" style="border-left: 4px solid #007bff; background-color: #f1f1f1;">
-                                        <img src="{{ subcategory.image.url }}" alt="{{ subcategory.name }}" class="category-image me-3" style="width: 30px; height: 30px; border-radius: 50%;">
-                                        <a href="/threads/?category={{ subcategory.slug }}" class="text-decoration-none text-dark" style="font-size: 1rem; font-weight: 500;">
-                                            <span>{{ subcategory.name }}</span>
+                            <button class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#category-{{ category.slug }}">
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                        </div>
+                        <ul id="category-{{ category.slug }}" class="collapse list-group mt-2">
+                            {% for subcategory in category.subcategories.all %}
+                                <li class="list-group-item py-2" style="border-left: 4px solid #007bff; background-color: #f1f1f1;">
+                                    <div class="d-flex align-items-center">
+                                        <!-- Картинка подкатегории (ссылка) -->
+                                        <a href="/threads/?category={{ subcategory.slug }}" class="d-flex align-items-center me-3" style="width: 60px; height: 60px;">
+                                            <img src="{{ subcategory.image.url }}" alt="{{ subcategory.name }}" class="img-fluid rounded-circle" style="width: 100%; height: 100%; object-fit: cover;">
                                         </a>
-                                        <small class="text-muted ms-auto" style="font-size: 0.875rem;">({{ subcategory.threads_count }} тема, {{ subcategory.comments_count }} повідомлень)</small>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </div>
-    </section>
-    
-
-    <section class="thread-list">
-        <h2 class="mb-4">Останні теми</h2>
-        <ul class="list-group mb-3">
-            {% for thread in last_threads %}
-                <li class="list-group-item">
-                    <a href="{{thread.get_absolute_url}}">{{ thread.title }}</a>
-                </li>
+                                        <!-- Название и количество тем/комментариев -->
+                                        <div class="d-flex flex-column w-100">
+                                            <a href="/threads/?category={{ subcategory.slug }}" class="text-decoration-none text-dark" style="font-size: 1rem; font-weight: 500;">
+                                                <span>{{ subcategory.name }}</span>
+                                            </a>
+                                            <small class="text-muted mt-1" style="font-size: 0.875rem;">({{ subcategory.threads_count }} тема, {{ subcategory.comments_count }} повідомлень)</small>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endif %}
             {% endfor %}
         </ul>
-        <!-- Кнопка для просмотра всех тем -->
-        <a href="{% url "forum:thread_list" %}" class="btn btn-primary">Переглянути всі теми</a>
-        <!-- Кнопка для создания новой темы -->
-        <a href="{% url "forum:thread_create" %}" class="btn btn-success">Створити тему</a>
-    </section>
+    </div>
+</section>
 
-
+<!-- Последние темы -->
+<section class="thread-list py-5">
+    <div class="container">
+        <h2 class="mb-4">Останні теми</h2>
+        <div class="row">
+            {% for thread in last_threads %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-chat-dots me-2 text-primary"></i>
+                                <a href="{{ thread.get_absolute_url }}" class="text-decoration-none text-dark">{{ thread.title }}</a>
+                            </h5>
+                            <p class="card-text text-muted small">
+                                <i class="bi bi-person-circle me-1"></i>{{ thread.author.username }}
+                                <span class="ms-3"><i class="bi bi-clock me-1"></i>{{ thread.created_at|date:"d.m.Y H:i" }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <!-- Кнопки для просмотра всех тем и создания новой темы -->
+        <div class="mt-4">
+            <a href="{% url 'forum:thread_list' %}" class="btn btn-primary me-2">Переглянути всі теми</a>
+            <a href="{% url 'forum:thread_create' %}" class="btn btn-success">Створити тему</a>
+        </div>
+    </div>
+</section>
 
 {% endblock content %}

@@ -314,3 +314,23 @@ class CustomPasswordChangeForm(PasswordChangeForm):
         #     raise ValidationError("Пароль не повинен містити частину вашої електронної пошти.")
 
         return new_password1
+    
+
+class CustomUsernameChangeForm(forms.Form):
+    username = forms.CharField(label="Новый никнейм", max_length=150)
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if username == self.user.username:
+            raise forms.ValidationError("Новый никнейм не должен совпадать с текущим.")
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("Этот никнейм уже занят.")
+        return username
+
+    def save(self):
+        self.user.username = self.cleaned_data.get('username')
+        self.user.save()

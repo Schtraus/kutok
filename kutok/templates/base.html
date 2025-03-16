@@ -16,7 +16,7 @@
 
     
     <!-- Подключаем кастомные стили -->
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
     
 </head>
 <body>
@@ -25,7 +25,7 @@
     {% include "nav.html" %}
 
 
-    <main class="container my-5">
+    <main class="container my-1">
     {% block content %}
     {% endblock content %}
     </main>

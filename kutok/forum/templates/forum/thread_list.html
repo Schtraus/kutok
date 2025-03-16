@@ -1,18 +1,19 @@
 {% extends "base.html" %}
-
-
+{% load static %}
 {% block content %}
 
+<link rel="stylesheet" href="{% static 'css/thread_list.css' %}">
+
 <div class="container mt-5">
-    
+    <!-- Заголовок и кнопка "Створити тему" -->
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4">
         <!-- Заголовок -->
         <h1 class="mb-3 mb-sm-0">{{ page_title }}</h1>
-        
-        <!-- Кнопка для создания темы -->
-        <a href="{% url 'forum:thread_create' %}" class="btn btn-success ms-sm-3 btn-custom">Створити тему</a>
+        <!-- Кнопка "Створити тему" для мобильных устройств -->
+        <div class="d-block d-lg-none w-100">
+            <a href="{% url 'forum:thread_create' %}" class="btn btn-success w-100">Створити тему</a>
+        </div>
     </div>
-    
 
     <div class="row">
         <!-- Фильтры для мобильной версии -->
@@ -20,6 +21,90 @@
             <button class="btn btn-primary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#mobileFilters" aria-expanded="false" aria-controls="mobileFilters">
                 Відкрити фільтри
             </button>
+        </div>
+
+        <!-- Фильтры для мобильной версии (скрытые по умолчанию) -->
+        <div class="collapse col-12 d-lg-none" id="mobileFilters">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Фільтри</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Форма для фильтров -->
+                    <form action="" method="GET">
+                        <!-- Фильтр по стране -->
+                        <div class="mb-3">
+                            <label class="form-label">Обрати країну</label>
+                            <ul class="list-group">
+                                <li class="list-group-item p-0 mb-2">
+                                    <div class="d-flex justify-content-between align-items-center p-2">
+                                        <!-- Название фильтра -->
+                                        <span class="filter-name">Країни</span>
+                                        <!-- Кнопка для раскрытия/скрытия списка стран -->
+                                        <button class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#country-list-mobile" onclick="event.preventDefault()">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Список стран -->
+                                    <ul id="country-list-mobile" class="collapse list-group mt-1">
+                                        {% for country in countries %}
+                                            <li class="list-group-item p-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="country" id="country-mobile-{{ country.code }}" value="{{ country.code }}" {% if request.GET.country == country.code %}checked{% endif %}>
+                                                    <label class="form-check-label" for="country-mobile-{{ country.code }}">
+                                                        {{ country.name }}
+                                                    </label>
+                                                </div>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Фильтр по категории -->
+                        <div class="mb-3">
+                            <label class="form-label">Фільтрувати за категорією</label>
+                            <ul class="list-group">
+                                {% for category in categories %}
+                                    {% if category.subcategories.exists %}
+                                        <li class="list-group-item p-0 mb-2">
+                                            <div class="d-flex justify-content-between align-items-center p-2">
+                                                <!-- Название категории -->
+                                                <span class="category-name">{{ category.name }}</span>
+                                                <!-- Кнопка для раскрытия/скрытия подкатегорий -->
+                                                <button class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#category-mobile-{{ category.slug }}" onclick="event.preventDefault()">
+                                                    <i class="bi bi-chevron-down"></i>
+                                                </button>
+                                            </div>
+
+                                            <!-- Подкатегории -->
+                                            <ul id="category-mobile-{{ category.slug }}" class="collapse list-group mt-1">
+                                                {% for subcategory in category.subcategories.all %}
+                                                    <li class="list-group-item p-2">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="category" id="category-mobile-{{ subcategory.slug }}" value="{{ subcategory.slug }}" {% if request.GET.category == subcategory.slug %}checked{% endif %}>
+                                                            <label class="form-check-label" for="category-mobile-{{ subcategory.slug }}">
+                                                                {{ subcategory.name }}
+                                                            </label>
+                                                        </div>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <!-- Кнопка для применения фильтров -->
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary w-100">Застосувати</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <!-- Фильтры слева для больших экранов -->
@@ -31,37 +116,88 @@
                 <div class="card-body">
                     <!-- Форма для фильтров -->
                     <form action="" method="GET">
-
                         <!-- Фильтр по стране -->
                         <div class="mb-3">
-                            <label for="country-filter" class="form-label">Фільтрувати за країною</label>
-                            <select class="form-select" id="country-filter" name="country">
-                                <option value="">Оберіть країну</option>
-                                {% for country in countries %}
-                                    <option value="{{ country.code }}" {% if request.GET.country == country.code %}selected{% endif %}>
-                                        {{ country.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
+                            <label class="form-label">Обрати країну</label>
+                            <ul class="list-group">
+                                <!-- Опция "Выбрать все страны" -->
+                                <li class="list-group-item p-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="country" id="country-all" value="" {% if not request.GET.country %}checked{% endif %}>
+                                        <label class="form-check-label" for="country-all">
+                                            Всі країни
+                                        </label>
+                                    </div>
+                                </li>
+                                <li class="list-group-item p-0 mb-2">
+                                    <div class="d-flex justify-content-between align-items-center p-2">
+                                        <!-- Название фильтра -->
+                                        <span class="filter-name">Обрати країни</span>
+                                        <!-- Кнопка для раскрытия/скрытия списка стран -->
+                                        <button class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#country-list" onclick="event.preventDefault()">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Список стран -->
+                                    <ul id="country-list" class="collapse list-group mt-1">
+                                        {% for country in countries %}
+                                            <li class="list-group-item p-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="country" id="country-{{ country.code }}" value="{{ country.code }}" {% if request.GET.country == country.code %}checked{% endif %}>
+                                                    <label class="form-check-label" for="country-{{ country.code }}">
+                                                        {{ country.name }}
+                                                    </label>
+                                                </div>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            </ul>
                         </div>
 
                         <!-- Фильтр по категории -->
                         <div class="mb-3">
-                            <label for="category-filter" class="form-label">Фільтрувати за категорією</label>
-                            <select class="form-select" id="category-filter" name="category">
-                                <option value="">Оберіть категорію</option>
+                            <label class="form-label">Фільтрувати за категорією</label>
+                            <ul class="list-group">
+                                <!-- Опция "Выбрать все категории" -->
+                                <li class="list-group-item p-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="category" id="category-all" value="" {% if not request.GET.category %}checked{% endif %}>
+                                        <label class="form-check-label" for="category-all">
+                                            Всі категорії
+                                        </label>
+                                    </div>
+                                </li>
                                 {% for category in categories %}
                                     {% if category.subcategories.exists %}
-                                        <option value="{{ category.slug }}" {% if request.GET.category == category.slug %}selected{% endif %}>
-                                            {{ category.name }}
-                                        </option>
-                                        {% for subcategory in category.subcategories.all %}
-                                            <option value="{{ subcategory.slug }}" {% if request.GET.subcategory == subcategory.slug %}selected{% endif %}>
-                                            -- {{ subcategory.name }}
-                                        {% endfor %}
+                                        <li class="list-group-item p-0 mb-2">
+                                            <div class="d-flex justify-content-between align-items-center p-2">
+                                                <!-- Название категории -->
+                                                <span class="category-name">{{ category.name }}</span>
+                                                <!-- Кнопка для раскрытия/скрытия подкатегорий -->
+                                                <button class="btn btn-link p-0" data-bs-toggle="collapse" data-bs-target="#category-{{ category.slug }}" onclick="event.preventDefault()">
+                                                    <i class="bi bi-chevron-down"></i>
+                                                </button>
+                                            </div>
+
+                                            <!-- Подкатегории -->
+                                            <ul id="category-{{ category.slug }}" class="collapse list-group mt-1">
+                                                {% for subcategory in category.subcategories.all %}
+                                                    <li class="list-group-item p-2">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="category" id="category-{{ subcategory.slug }}" value="{{ subcategory.slug }}" {% if request.GET.category == subcategory.slug %}checked{% endif %}>
+                                                            <label class="form-check-label" for="category-{{ subcategory.slug }}">
+                                                                {{ subcategory.name }}
+                                                            </label>
+                                                        </div>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
                                     {% endif %}
                                 {% endfor %}
-                            </select>
+                            </ul>
                         </div>
 
                         <!-- Кнопка для применения фильтров -->
@@ -73,116 +209,98 @@
             </div>
         </aside>
 
-        <!-- Фильтры для мобильной версии (скрытые по умолчанию) -->
-        <div class="collapse col-12 d-lg-none" id="mobileFilters">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Фільтри</h5>
-                </div>
-                <div class="card-body">
-                    <form action="" method="GET">
-                        <!-- Фильтр по стране -->
-                        <div class="mb-3">
-                            <label for="country-filter-mobile" class="form-label">Фільтрувати за країною</label>
-                            <select class="form-select" id="country-filter-mobile" name="country">
-                                <option value="">Оберіть країну</option>
-                                {% for country in countries %}
-                                    <option value="{{ country.code }}" {% if request.GET.country == country.code %}selected{% endif %}>
-                                        {{ country.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- Фильтр по категории -->
-                        <div class="mb-3">
-                            <label for="category-filter-mobile" class="form-label">Фільтрувати за категорією</label>
-                            <select class="form-select" id="category-filter-mobile" name="category">
-                                <option value="">Оберіть категорію</option>
-                                {% for category in categories %}
-                                    {% if category.subcategories.exists %}
-                                        <option value="{{ category.slug }}" {% if request.GET.category == category.slug %}selected{% endif %}>
-                                            {{ category.name }}
-                                        </option>
-                                        {% for subcategory in category.subcategories.all %}
-                                            <option value="{{ subcategory.slug }}" {% if request.GET.subcategory == subcategory.slug %}selected{% endif %}>
-                                            -- {{ subcategory.name }}
-                                        {% endfor %}
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- Кнопка для применения фильтров -->
-                        <div class="mb-3">
-                            <button type="submit" class="btn btn-primary w-100">Застосувати</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Список тредов с отрывками -->
+        <!-- Основной контент -->
         <div class="col-md-9">
+            <!-- Кнопка "Створити тему" для больших экранов -->
+            <div class="d-flex justify-content-end mb-3 d-none d-lg-block">
+                <a href="{% url 'forum:thread_create' %}" class="btn btn-success">Створити тему</a>
+            </div>
+
+            <!-- Список тредов с отрывками -->
+            <!-- Список тредов с отрывками -->
+            <!-- Список тредов с отрывками -->
             <ul class="thread-list mt-3">
                 {% for thread in page_obj %}
-                    <li class="thread-list-item">
-                        <h3 class="thread-title">
-                            <a href="{{ thread.get_absolute_url }}">{{ thread.title }}</a>
-                        </h3>
-                        <p class="thread-meta">Опубліковано: {{ thread.created_at }} | Коментарів: {{ thread.comments_count }}</p>
-                        <p class="thread-excerpt">
-                            {{ thread.content|linebreaks|truncatewords:15 }}
-                        </p>
+                    <li class="thread-list-item mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h3 class="thread-title mb-3">
+                                    <a href="{{ thread.get_absolute_url }}" class="text-decoration-none text-dark">{{ thread.title|truncatechars:75 }}</a>
+                                </h3>
+                                <!-- Мета-информация -->
+                                <div class="thread-meta">
+                                    <div class="d-flex flex-column flex-sm-row align-items-sm-center">
+                                        <div class="d-flex align-items-center me-sm-3">
+                                            <i class="bi bi-person-circle me-1"></i>
+                                            <span>{{ thread.author.username }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center me-sm-3">
+                                            <i class="bi bi-clock me-1"></i>
+                                            <span>{{ thread.created_at|date:"d.m.Y H:i" }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mt-2 mt-sm-0">
+                                        <i class="bi bi-chat-dots me-1"></i>
+                                        <span>{{ thread.comments_count }} коментарів</span>
+                                    </div>
+                                </div>
+                                <p class="thread-excerpt text-muted mt-2">
+                                    {{ thread.content|linebreaks|truncatechars:175 }}
+                                </p>
+                                <a href="{{ thread.get_absolute_url }}" class="btn btn-outline-primary btn-sm mt-2">Читати далі</a>
+                            </div>
+                        </div>
                     </li>
                 {% empty %}
-                    <h3 class="thread-title">Обговорень немає</h3>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h3 class="thread-title text-center text-muted">Обговорень немає</h3>
+                        </div>
+                    </div>
                 {% endfor %}
             </ul>
-
-            <!-- Пагинация -->
-            <div class="pagination-wrapper">
-                <nav aria-label="Page navigation" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&country={{ request.GET.country }}&category={{ request.GET.category }}" tabindex="-1">Попередня</a>
-                            </li>
-                        {% else %}
-                            <li class="page-item disabled">
-                                <a class="page-link" href="#" tabindex="-1">Попередня</a>
-                            </li>
-                        {% endif %}
-
-                        <!-- Страницы -->
-                        {% for num in page_obj.paginator.page_range %}
-                            {% if page_obj.number == num %}
-                                <li class="page-item active">
-                                    <a class="page-link" href="?page={{ num }}&country={{ request.GET.country }}&category={{ request.GET.category }}">{{ num }}</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ num }}&country={{ request.GET.country }}&category={{ request.GET.category }}">{{ num }}</a>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}&country={{ request.GET.country }}&category={{ request.GET.category }}">Наступна</a>
-                            </li>
-                        {% else %}
-                            <li class="page-item disabled">
-                                <a class="page-link" href="#">Наступна</a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            </div>
-
         </div>
     </div>
-</div>
 
+    <!-- Пагинация -->
+    <div class="pagination-wrapper mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&country={{ request.GET.country }}&category={{ request.GET.category }}" tabindex="-1">Попередня</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">Попередня</a>
+                    </li>
+                {% endif %}
+
+                <!-- Страницы -->
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <a class="page-link" href="?page={{ num }}&country={{ request.GET.country }}&category={{ request.GET.category }}">{{ num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}&country={{ request.GET.country }}&category={{ request.GET.category }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&country={{ request.GET.country }}&category={{ request.GET.category }}">Наступна</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Наступна</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
 
 {% endblock content %}

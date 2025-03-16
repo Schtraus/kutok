@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy
 from .models import Category, Complaint, Thread, Comment, Country
 from django.db.models import Count
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.views.generic import CreateView
 from .forms import ThreadForm, CommentForm
@@ -14,11 +14,9 @@ from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import json
+from django.template.loader import render_to_string
 
 
-from django.db.models import Count
-from django.shortcuts import render
-from .models import Category
 
 def home(request):
     # Получаем все категории с подкатегориями, тредами и комментариями
@@ -50,56 +48,6 @@ def home(request):
     }
     
     return render(request, 'forum/home.html', context=data)
-
-
-
-
-# def thread_list(request):
-#     country = request.GET.get('country')
-#     category_slug = request.GET.get('category')
-#     query = request.GET.get('q')  # Новый параметр для поиска
-#     threads = Thread.objects.filter(is_active=True)
-
-#     if query:
-#         threads = threads.filter(
-#             Q(title__icontains=query) | Q(content__icontains=query)
-#         )
-    
-#     if country:
-#         threads = threads.filter(country=country)
-#     if category_slug:
-#         threads = threads.filter(category__slug=category_slug)
-    
-#     categories = Category.objects.filter(is_active=True)
-
-#     paginator = Paginator(threads, 5)  # 5 - количество элементов на странице
-
-#     page_number = request.GET.get('page')
-#     page_obj = paginator.get_page(page_number)
-
-#     if category_slug:
-#         category = Category.objects.get(slug=category_slug)
-#         page_title = f'{category.name}'
-#     else:
-#         page_title = "Список всіх обговорень"
-    
-#     # Добавляем к названию страницы текст поиска, если запрос был
-#     if query:
-#         page_title = f'Результати пошуку для "{query}"'
-
-#     return render(request, 'forum/thread_list.html', {
-#         'threads': threads,
-#         'categories': categories,
-#         'countries': None,
-#         'page_title': page_title,
-#         'page_obj': page_obj,
-#     })
-
-
-from django.shortcuts import render
-from django.db.models import Count
-from django.core.paginator import Paginator
-from .models import Thread, Country, Category
 
 
 def thread_list(request):
@@ -146,7 +94,7 @@ def thread_list(request):
     categories = Category.objects.filter(is_active=True)
 
     # Пагинация
-    paginator = Paginator(threads, 2)  # 5 тредов на страницу
+    paginator = Paginator(threads, 5)  # 5 тредов на страницу
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -168,8 +116,6 @@ def thread_list(request):
         'page_obj': page_obj,
         'search_query': search_query,
     })
-
-
 
 
 def category_list(request):
@@ -210,9 +156,16 @@ class ThreadCreateView(LoginRequiredMixin, CreateView):
         return super().form_invalid(form)
     
 
+
 def thread_detail(request, thread_slug):
     thread = get_object_or_404(Thread, slug=thread_slug)
-    comments = thread.comments.all()
+    comments_list = thread.comments.all().order_by('-created_at')
+
+    # Загружаем первые 25 комментариев
+    comments = comments_list[:25]
+
+    # Получаем общее количество комментариев
+    comment_count = comments_list.count()
 
     latest_threads = Thread.objects.order_by('-created_at')[:7]
     popular_threads = Thread.objects.annotate(comment_count=models.Count('comments')).order_by('-comment_count')[:7]
@@ -230,12 +183,34 @@ def thread_detail(request, thread_slug):
 
     context = {
         'thread': thread,
-        'comments': comments,
+        'comments': comments,  # Передаем первые 25 комментариев
+        'comment_count': comment_count,  # Общее количество комментариев
         'form': form,
         'latest_threads': latest_threads,
         'popular_threads': popular_threads,
     }
     return render(request, 'forum/thread_detail.html', context)
+
+
+def load_more_comments(request, thread_slug):
+    thread = get_object_or_404(Thread, slug=thread_slug)
+    offset = int(request.GET.get('offset', 0))  # Количество уже загруженных комментариев
+    limit = 25  # Количество комментариев для подгрузки
+
+    # Получаем следующие 25 комментариев
+    comments = thread.comments.all().order_by('-created_at')[offset:offset + limit]
+
+    # Рендерим HTML для новых комментариев
+    comments_html = render_to_string('forum/comments_partial.html', {
+        'comments': comments,
+        'user': request.user,  # Передаем текущего пользователя в контекст
+    })
+
+    return JsonResponse({
+        'comments_html': comments_html,
+        'has_more': len(comments) == limit,  # Есть ли еще комментарии для подгрузки
+    })
+
 
 
 @require_POST
@@ -283,6 +258,7 @@ def update_comment(request, comment_id):
         'page_title': f'Результати пошуку для "{query}"',
         'page_obj': page_obj,
     })
+
 
 @login_required
 def report_comment(request, comment_id):

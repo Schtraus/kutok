@@ -1,11 +1,13 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.urls import reverse_lazy
-from .forms import CustomPasswordResetForm, RegistrationForm, CustomPasswordResetConfirmForm, CustomPasswordChangeForm
+from .forms import CustomPasswordResetForm, CustomUsernameChangeForm, RegistrationForm, CustomPasswordResetConfirmForm, CustomPasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import views as auth_views
+from django.contrib.auth import update_session_auth_hash
 
 
 # def login_view(request):
@@ -59,7 +61,27 @@ def register(request):
 
 @login_required
 def profile(request):
-    return render(request, 'users/profile.html')
+    if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        # Проверка, какой именно запрос был отправлен
+        if "username" in request.POST:
+            form = CustomUsernameChangeForm(request.user, request.POST)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({"success": False, "errors": form.errors}, status=400)
+        elif "old_password" in request.POST:
+            form = CustomPasswordChangeForm(request.user, request.POST)
+            if form.is_valid():
+                form.save()
+                update_session_auth_hash(request, form.user)
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({"success": False, "errors": form.errors}, status=400)
+    
+    username_form = CustomUsernameChangeForm(request.user)
+    password_form = CustomPasswordChangeForm(request.user)
+    return render(request, 'users/profile.html', {'username_form': username_form, 'password_form': password_form})
 
 
 class CustomPasswordResetView(auth_views.PasswordResetView):
