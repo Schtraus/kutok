@@ -8,6 +8,7 @@ from .forms import CustomPasswordResetForm, CustomUsernameChangeForm, Registrati
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import views as auth_views
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.backends import ModelBackend
 
 
 # def login_view(request):
@@ -42,6 +43,9 @@ def register(request):
             password = form.cleaned_data['password']
 
             user = User.objects.create_user(username=username, email=email, password=password)
+
+            # Указываем бэкенд для пользователя
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
 
             # Логиним пользователя после регистрации
             login(request, user)
