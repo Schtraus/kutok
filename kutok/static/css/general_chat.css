@@ -1,4 +1,9 @@
-
+.message-header {
+    display: flex;
+    justify-content: space-between; /* разделяет элементы по краям */
+    align-items: center;
+    width: 100%;
+}
 /* Стили для выпадающего меню */
 .message-actions .dropdown-menu {
     z-index: 9999; /* Очень высокий z-index, чтобы быть поверх всех элементов */
@@ -162,6 +167,7 @@
 }
 
 .message-author {
+    margin-right: 45px;
     font-weight: bold;
     font-size: 0.9rem;
     margin-bottom: 5px;
