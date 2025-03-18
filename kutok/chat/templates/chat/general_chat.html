@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load static %}
+{% comment %} <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> {% endcomment %}
+{% block title %}Rozmova.eu - Live Chat{% endblock title %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/general_chat.css' %}">
+
+    <div id="chat-container" data-user-id="{{ request.user.id|default:'null' }}">
+        <!-- Остальная часть вашего чата -->
+    </div>
+    <div class="chat-container" >
+        <!-- Заголовок чата -->
+        <div class="chat-header">
+            Live Chat
+        </div>
+
+        <!-- Окно сообщений -->
+        <div class="chat-messages" id="chat-messages">
+            <!-- История сообщений -->
+            {% for message in messages %}
+            <div class="message visible {% if message.user == request.user %}user{% else %}bot{% endif %}" 
+                data-message-id="{{ message.id }}"
+                {% if message.timestamp %}data-timestamp="{{ message.timestamp.isoformat }}"{% endif %}>
+                <div class="message-avatar">
+                    {% if message.user.profile.avatar %}
+                        <img src="{{ message.user.profile.avatar.url }}" alt="{{ message.user.username }}" style="width: 40px; height: 40px; border-radius: 50%;">
+                    {% else %}
+                        <div>{{ message.user.username|first|upper }}</div>
+                    {% endif %}
+                </div>
+                <div class="message-content">
+                    <!-- Кнопка "Троеточие" и выпадающий список -->
+                    {% if request.user.is_authenticated %}
+                    <div class="message-actions">
+                        <div class="dropdown">
+                            <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <!-- Пункты для автора сообщения -->
+                                {% if message.user == request.user %}
+                                <li><a class="dropdown-item edit-message" href="#"><i class="bi bi-pencil me-2"></i>Редактировать</a></li>
+                                <li><a class="dropdown-item delete-message" href="#"><i class="bi bi-trash me-2"></i>Удалить</a></li>
+                                {% endif %}
+                                <!-- Пункты для всех авторизованных пользователей -->
+                                {% if message.user != request.user %}
+                                {% comment %} <li><a class="dropdown-item" href="#"><i class="bi bi-reply me-2"></i>Ответить</a></li> {% endcomment %}
+                                <li><a class="dropdown-item report-message" href="#"><i class="bi bi-flag me-2"></i>Пожаловаться</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="message-author">{{ message.user.username }}</div>
+                    <div class="message-text">
+                        {{ message.message }}
+                    </div>
+                    <span class="message-time"></span> <!-- Время будет заполнено JavaScript -->
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Кнопка для прокрутки вниз -->
+        <button id="scroll-to-bottom" class="scroll-to-bottom-btn" title="Перейти к новым сообщениям">
+            <i class="bi bi-arrow-down"></i> <!-- Иконка стрелки вниз -->
+        </button>
+
+        <!-- Поле ввода сообщения -->
+        <div class="chat-input">
+            {% if request.user.is_authenticated %}
+                <input type="text" id="chat-message-input" placeholder="Введите сообщение...">
+                <button id="chat-message-submit">
+                    <i class="bi bi-send"></i>
+                </button>
+            {% else %}
+                <button onclick="window.location.href='{% url 'users:login' %}'" class="login-to-chat-btn w-100">
+                    Авторизоваться
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <!-- Модальное окно для редактирования сообщения -->
+    <div class="modal fade" id="editMessageModal" tabindex="-1" aria-labelledby="editMessageModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editMessageModalLabel">Редактировать сообщение</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editMessageForm">
+                        <input type="hidden" id="editMessageId">
+                        <div class="mb-3">
+                            <label for="editMessageText" class="form-label">Сообщение</label>
+                            <textarea class="form-control" id="editMessageText" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" id="saveEditedMessage">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для подтверждения удаления -->
+    <div class="modal fade" id="deleteMessageModal" tabindex="-1" aria-labelledby="deleteMessageModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteMessageModalLabel">Подтверждение удаления</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Вы уверены, что хотите удалить это сообщение?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteMessage">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Модальное окно для жалобы -->
+    <div class="modal fade" id="reportMessageModal" tabindex="-1" aria-labelledby="reportMessageModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportMessageModalLabel">Пожаловаться на сообщение</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="reportMessageForm">
+                        <input type="hidden" id="reportMessageId">
+                        <div class="mb-3">
+                            <label for="reportReason" class="form-label">Причина жалобы</label>
+                            <select class="form-select" id="reportReason" required>
+                                <option value="Спам">Спам</option>
+                                <option value="Оскорбление">Оскорбление</option>
+                                <option value="Реклама сторонних ресурсов">Реклама сторонних ресурсов</option>
+                                <option value="Некорректное поведение">Некорректное поведение</option>
+                                <option value="Мошенничество">Мошенничество</option>
+                                <option value="Распространение ложной информации">Распространение ложной информации</option>
+                                <option value="other">Другое</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" id="submitReport">Отправить жалобу</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {% comment %} <audio id="send-sound" src="{% static 'sounds/sent_comment.mp3' %}"></audio>
+    <audio id="receive-sound" src="{% static 'sounds/received-comment.wav' %}"></audio> {% endcomment %}
+    <!-- Подключаем Bootstrap JS -->
+{% comment %} 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  {% endcomment %}
+
+    <!-- Кастомный JS для чата -->
+    <script src="{% static 'js/general_chat.js' %}"></script>
+
+{% endblock content %}

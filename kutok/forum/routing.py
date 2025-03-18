@@ -5,3 +5,5 @@ websocket_urlpatterns = [
     # В этот путь будет подключаться WebSocket
     re_path(r'ws/thread/(?P<thread_id>\d+)/$', consumers.CommentConsumer.as_asgi()),
 ]
+
+

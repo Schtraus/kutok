@@ -1,6 +1,25 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/nav_bar.css' %}">
-
+<style>
+    .notification-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        background-color: red;
+        border-radius: 50%;
+        margin-left: 5px;
+        animation: blink 1s infinite;
+    }
+    
+    @keyframes blink {
+        0%, 50%, 100% {
+            opacity: 1;
+        }
+        25%, 75% {
+            opacity: 0;
+        }
+    }
+</style>
 <header>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
@@ -28,6 +47,13 @@
 
                 <!-- Навигационные ссылки -->
                 <ul class="navbar-nav ms-lg-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'chat:general_chat' %}">
+                            <span class="d-lg-none"><i class="bi bi-chat me-2"></i></span>
+                            Live chat
+                            <span class="notification-dot"></span> 
+                        </a>
+                    </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'users:profile' %}">
@@ -61,10 +87,10 @@
     </nav>
 </header>
 
-<!-- Подключаем Bootstrap Icons -->
+{% comment %} <!-- Подключаем Bootstrap Icons -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet">
 
 <!-- Подключаем select2 для улучшенного выпадающего списка с поиском -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script> {% endcomment %}

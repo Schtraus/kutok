@@ -96,6 +96,7 @@ INSTALLED_APPS = [
     'allauth.account',        # Модуль для учётных записей
     'allauth.socialaccount',  # Модуль для социальных аккаунтов
     'allauth.socialaccount.providers.google',  # Провайдер Google
+    'chat.apps.ChatConfig'
 ]
 
 MIDDLEWARE = [

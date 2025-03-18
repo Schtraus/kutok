@@ -1,0 +1,241 @@
+
+/* Стили для выпадающего меню */
+.message-actions .dropdown-menu {
+    z-index: 9999; /* Очень высокий z-index, чтобы быть поверх всех элементов */
+    position: absolute; /* Абсолютное позиционирование */
+    top: 100%; /* Позиционируем ниже кнопки */
+    right: 0; /* Выравниваем по правому краю */
+    min-width: 180px; /* Минимальная ширина меню */
+    background-color: #fff; /* Цвет фона */
+    border: 1px solid rgba(0, 0, 0, 0.1); /* Граница */
+    border-radius: 8px; /* Скругление углов */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Тень */
+    padding: 8px 0; /* Отступы внутри меню */
+}
+
+/* Стили для пунктов меню */
+.message-actions .dropdown-menu .dropdown-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem; /* Размер текста */
+    color: #333; /* Цвет текста */
+    text-decoration: none; /* Убираем подчёркивание */
+    transition: background-color 0.2s ease; /* Плавное изменение фона */
+}
+
+/* Стили для иконок в пунктах меню */
+.message-actions .dropdown-menu .dropdown-item i {
+    margin-right: 8px; /* Отступ между иконкой и текстом */
+    font-size: 1rem; /* Размер иконки */
+    color: #666; /* Цвет иконки */
+}
+
+
+/* Эффект при наведении на пункты меню */
+.message-actions .dropdown-menu .dropdown-item:hover {
+    background-color: #f8f9fa; /* Цвет фона при наведении */
+    color: #000; /* Цвет текста при наведении */
+}
+
+/* Эффект для активного пункта меню */
+.message-actions .dropdown-menu .dropdown-item:active {
+    background-color: #e9ecef; /* Цвет фона при нажатии */
+}
+
+/* Стили для кнопки прокрутки вниз */
+.scroll-to-bottom-btn {
+    position: absolute; /* Оставляем absolute */
+    bottom: 80px; /* Отступ от нижнего края (выше поля ввода) */
+    right: 20px; /* Отступ от правого края */
+    width: 40px; /* Ширина кнопки */
+    height: 40px; /* Высота кнопки */
+    border-radius: 50%; /* Круглая форма */
+    background-color: #007bff; /* Цвет фона */
+    color: white; /* Цвет иконки */
+    border: none; /* Убираем границу */
+    cursor: pointer; /* Курсор в виде указателя */
+    display: none; /* Скрываем по умолчанию */
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Тень */
+    transition: opacity 0.3s ease; /* Плавное появление */
+    z-index: 1000; /* Убедимся, что кнопка поверх других элементов */
+}
+
+.scroll-to-bottom-btn.visible {
+    display: flex; /* Показываем кнопку, если нужно */
+}
+
+.scroll-to-bottom-btn:hover {
+    background-color: #0056b3; /* Цвет фона при наведении */
+}
+
+.chat-container {
+    z-index: 1;
+    position: relative;
+    max-width: 800px;
+    margin: 50px auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+}
+
+.chat-header {
+    background: #2c3e50; /* Темный синий */
+    color: #fff;
+    padding: 15px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f1f3f5;
+}
+
+.message {
+    z-index: 1;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    opacity: 0; /* Начальное состояние: невидимо */
+    transform: translateY(20px); /* Начальное смещение вниз */
+    transition: opacity 0.5s ease, transform 0.5s ease; /* Плавный переход */
+}
+
+.message.visible {
+    opacity: 1; /* Конечное состояние: видимо */
+    transform: translateY(0); /* Конечное положение */
+}
+
+.message.user {
+    justify-content: flex-end;
+}
+
+.message.bot {
+    justify-content: flex-start;
+}
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background-color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #fff;
+}
+
+.message-content {
+    word-wrap: break-word; /* Переносим длинные слова */
+    display: inline-block; /* Позволяет блоку растягиваться по содержимому */
+    min-width: 120px; /* Минимальная ширина блока */
+    max-width: 70%;
+    padding: 10px;
+    border-radius: 10px;
+    position: relative;
+    background: #e9ecef;
+    color: #000;
+}
+
+.message.user .message-content {
+    background: #3498db; /* Приглушенный синий */
+    color: #fff;
+    border-bottom-right-radius: 0;
+}
+
+.message.bot .message-content {
+    background: #e9ecef;
+    color: #000;
+    border-bottom-left-radius: 0;
+}
+
+.message-author {
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.message-time {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 5px;
+    display: block;
+}
+
+.message-actions {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    min-width: 30px;
+}
+
+.message-actions .dropdown-toggle {
+    background: none;
+    border: none;
+    color: #6c757d;
+    padding: 0;
+}
+
+.message-actions .dropdown-toggle:hover {
+    color: #000;
+}
+
+.chat-input {
+    display: flex;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    gap: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-right: 10px;
+    min-width: 0;
+}
+
+.chat-input button {
+    padding: 10px 20px;
+    background: #3498db; /* Приглушенный синий */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.chat-input button:hover {
+    background: #2980b9; /* Темнее при наведении */
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+    .chat-container {
+        margin: 20px auto;
+        height: 90vh;
+    }
+
+    .chat-header {
+        font-size: 1rem;
+    }
+
+    .message-content {
+        max-width: 80%;
+    }
+
+}
