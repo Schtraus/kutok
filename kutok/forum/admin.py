@@ -4,7 +4,7 @@ from .models import Category, Thread, Comment, Complaint, Country
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'parent', 'is_active')  # Добавляем поле parent в список отображаемых
+    list_display = ('name', 'image', 'parent', 'is_active')  # Добавляем поле parent в список отображаемых
     list_filter = ('is_active', 'parent')  # Добавляем фильтрацию по родительской категории
     search_fields = ('name',)  # Добавляем поиск по имени и slug категории
     ordering = ('name',)
@@ -38,7 +38,7 @@ class CommentAdmin(admin.ModelAdmin):
 
 @admin.register(Complaint)
 class ComplaintAdmin(admin.ModelAdmin):
-    list_display = ('comment', 'user', 'reason', 'status', 'created_at')
+    list_display = ('id', 'comment', 'user', 'reason', 'status', 'created_at')
     search_fields = ('reason', 'user__username', 'comment__content')
     list_filter = ('status',)
     actions = ['mark_as_reviewed']
