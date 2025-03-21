@@ -1,5 +1,6 @@
     /* Стили для навигационной панели */
     .navbar {
+        /* max-height: 70px; */
         padding: 0.5rem 1rem;
     }
     
@@ -8,8 +9,10 @@
     }
     
     .navbar-brand img {
-        height: 40px;
-        width: auto;
+        height: 50px;
+        width: auto; /* Сохраняем пропорции */
+        max-height: 100%; /* Ограничиваем высоту логотипа высотой панели */
+        object-fit: contain; /* Сохраняем пропорции логотипа */
     }
     
     .nav-link {
