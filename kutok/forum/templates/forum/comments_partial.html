@@ -1,32 +1,37 @@
-<!-- forum/comments_partial.html -->
 {% for comment in comments %}
-<li class="list-group-item mb-3 p-3 shadow-sm rounded" id="comment-{{ comment.id }}">
-    <div class="d-flex justify-content-between align-items-center">
-        <div>
-            <strong>{{ comment.author.username }}</strong>
-            <span class="text-muted small">— {{ comment.created_at|date:"d M Y H:i" }}</span>
-        </div>
-
-        <div class="ms-auto">
-            {% if comment.author == user %}
-                <!-- Редактировать комментарий -->
-                <a href="#" class="btn btn-warning btn-sm edit-comment">
-                    <i class="bi bi-pencil"></i>
-                </a>
-                <!-- Удалить комментарий -->
-                <a href="#" class="btn btn-danger btn-sm delete-comment" data-id="{{ comment.id }}">
-                    <i class="bi bi-trash"></i>
-                </a>
-            {% elif user.is_authenticated %}
-                <!-- Пожаловаться на комментарий -->
-                <a href="#" class="btn btn-danger btn-sm report-comment" data-id="{{ comment.id }}">
-                    <i class="bi bi-flag"></i>
-                </a>
+    <div class="comment" id="comment-{{ comment.id }}">
+        <div class="comment-header">
+            <div class="d-flex align-items-center">
+                <div class="message-avatar">
+                    {% if comment.avatar_url %}
+                        <img src="{{ comment.avatar_url }}" alt="{{ comment.author }}" style="width: 40px; height: 40px; border-radius: 50%;">
+                    {% else %}
+                        <div>{{ comment.author|first|upper }}</div>
+                    {% endif %}
+                </div>
+                <div>
+                    <span class="comment-author">{{ comment.author }}</span>
+                    <span class="comment-date" data-utc-time="{{ comment.created_at }}">— {{ comment.created_at }}</span>
+                </div>
+            </div>
+            {% if user.is_authenticated %}
+                <div class="comment-actions">
+                    <div class="dropdown">
+                        <button class="dropdown-toggle" type="button" id="dropdownMenuButton{{ comment.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ comment.id }}">
+                            {% if user == comment.author %}
+                                <li><a class="dropdown-item edit-comment" href="#" data-id="{{ comment.id }}">Редагувати</a></li>
+                                <li><a class="dropdown-item delete-comment" href="#" data-id="{{ comment.id }}">Видалити</a></li>
+                            {% else %}
+                                <li><a class="dropdown-item report-comment" href="#" data-id="{{ comment.id }}">Поскаржитися</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
             {% endif %}
         </div>
+        <p class="comment-content mt-2">{{ comment.content|linebreaksbr }}</p>
     </div>
-
-    <!-- Комментарий -->
-    <p class="comment-content mb-0 mt-2">{{ comment.content|linebreaksbr }}</p>
-</li>
 {% endfor %}

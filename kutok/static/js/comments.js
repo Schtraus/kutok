@@ -1,312 +1,352 @@
-function decodeEntities(str) {
-    var textarea = document.createElement('textarea');
-    textarea.innerHTML = str;
-    return textarea.value;
+function formatLocalTime(utcTimeString) {
+    const date = new Date(utcTimeString);
+    return date.toLocaleString('ru-RU', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).replace(/\./g, '/'); // Заменяем точки на слэши
 }
 
-// Обработка отправки формы редактирования
-document.getElementById('editCommentForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    var commentId = document.getElementById('commentId').value;
-    var updatedContent = document.getElementById('commentContent').value;
-
-    // Здесь необходимо отправить запрос на сервер для обновления комментария
-    fetch('/comments/update/' + commentId + '/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-
-        },
-        body: JSON.stringify({
-            content: updatedContent
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.querySelector('#comment-' + commentId + ' .comment-content').innerHTML = updatedContent.replace(/\n/g, '<br>');
-            var editCommentModal = bootstrap.Modal.getInstance(document.getElementById('editCommentModal'));
-            editCommentModal.hide();
-        } else {
-            alert('Ошибка при обновлении комментария.');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Произошла ошибка.');
-    });
+// Применяем функцию ко всем элементам с классом .comment-date
+document.querySelectorAll('.comment-date').forEach(element => {
+    const utcTimeString = element.getAttribute('data-utc-time');
+    element.textContent = formatLocalTime(utcTimeString);
 });
 
 
+document.getElementById('load-more-comments').addEventListener('click', function () {
+    const button = this;
+    const threadSlug = button.getAttribute('data-thread-slug');
+    const offset = parseInt(button.getAttribute('data-offset'), 10);
+    
 
-// Обработка отправки формы жалобы
-document.getElementById('reportCommentForm').addEventListener('submit', function (e) {
-    e.preventDefault();
+    // Отправляем запрос на сервер
+    fetch(`/thread/${threadSlug}/load-more-comments/?offset=${offset}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.comments_html) {
+                // Добавляем новые комментарии в контейнер
+                document.getElementById('comments-container').insertAdjacentHTML('beforeend', data.comments_html);
+                document.querySelectorAll('.comment-date').forEach(element => {
+                    const utcTimeString = element.getAttribute('data-utc-time');
+                    element.textContent = formatLocalTime(utcTimeString);
+                });
 
-    const commentId = document.getElementById('reportCommentId').value;
-    const reason = document.getElementById('reportReason').value;
+                // Обновляем offset для следующей загрузки
+                button.setAttribute('data-offset', offset + 25);
 
-    console.log(`/comments/report/${commentId}/`);  // Логируем URL
-    console.log({
-        reason: reason
-    });
-
-    fetch(`/comments/report/${commentId}/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({
-            reason: reason
+                // Скрываем кнопку, если больше нет комментариев
+                if (!data.has_more) {
+                    button.style.display = 'none';
+                }
+            }
         })
-    })
-    .then(response => response.json())  // Парсим ответ как JSON
-    .then(data => {
-        console.log('Response Data:', data); // Теперь данные уже объект
-        if (data.success) {
-            alert('Жалоба отправлена');
-            const reportModal = bootstrap.Modal.getInstance(document.getElementById('reportCommentModal'));
-            reportModal.hide();
-        } else {
-            alert(data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Ошибка:', error);
-        alert('Произошла ошибка');
-    });
+        .catch(error => console.error('Ошибка:', error));
 });
 
 
+document.addEventListener("DOMContentLoaded", function () {
+    const threadId = document.getElementById("thread-id").textContent;
+    const commentForm = document.getElementById("commentForm");
+    const commentsContainer = document.getElementById("comments-container");
 
+    // Редактирование
+    const editMessageModal = new bootstrap.Modal(document.getElementById("editMessageModal"));
+    const editMessageText = document.getElementById("editMessageText");
+    const editMessageId = document.getElementById("editMessageId");
+    const saveEditedMessageBtn = document.getElementById("saveEditedMessage");
 
-document.addEventListener('DOMContentLoaded', () => {
-    const threadId = document.getElementById('thread-id').textContent.trim(); // Просто получаем текст
-    const commentSocket = new WebSocket(
+    // Удаление
+    const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
+    let commentIdToDelete = null;
+
+    // Жалобы
+    const reportCommentModal = new bootstrap.Modal(document.getElementById('reportCommentModal'));
+    const reportCommentIdInput = document.getElementById('reportCommentId');
+    const reportReasonSelect = document.getElementById('reportReason');
+    const submitReportButton = document.getElementById('submitReport');
+    
+    let isAuthenticated = false;
+
+    const saveThreadChangesButton = document.getElementById('saveThreadChanges');
+
+    function formatLocalTime(utcTimeString) {
+        const date = new Date(utcTimeString);
+        return date.toLocaleString('ru-RU', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+        }).replace(/\./g, '/'); // Заменяем точки на слэши
+    }
+
+    // Подключаемся к WebSocket
+    const socket = new WebSocket(
         `wss://${window.location.host}/ws/thread/${threadId}/`
     );
 
-    commentSocket.onmessage = function(e) {
+    // Обработка входящих сообщений
+    socket.onmessage = function (e) {
+
         const data = JSON.parse(e.data);
 
-        // Если текущая страница не первая, перенаправляем на первую страницу
-        const currentPage = new URLSearchParams(window.location.search).get('page');
-        if (currentPage && currentPage !== '1') {
-            window.location.href = window.location.pathname;  // Перенаправляем на первую страницу
-            return;
+        if (data.action === 'auth_status') {
+            // Сохраняем статус авторизации и имя пользователя
+            isAuthenticated = data.is_authenticated;
+            currentUsername = data.username;
         }
-
-        // Получаем контейнер для комментариев
-        const commentContainer = document.getElementById('comments-container');
-
-        // Формируем новый комментарий
-        const newComment = `
-            <li class="list-group-item mb-3 p-3 shadow-sm rounded fade-in blinking" id="comment-${data.id}">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>${data.author}</strong>
-                        <span class="text-muted small">— ${new Date(data.created_at).toLocaleString('en-GB', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            })}
-                        </span>
-                    </div>
-                    <div class="ms-auto">
-                        ${data.current_user_authenticated && data.current_user_is_author ? `
-                            <!-- Редактировать комментарий -->
-                            <a href="#" class="btn btn-warning btn-sm edit-comment" data-id="${data.id}">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <!-- Удалить комментарий -->
-                            <a href="#" class="btn btn-danger btn-sm delete-comment" data-id="${data.id}">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        ` : ''}
-                        ${data.current_user_authenticated && !data.current_user_is_author ? `
-                            <!-- Пожаловаться на комментарий -->
-                            <a href="#" class="btn btn-danger btn-sm report-comment" data-id="${data.id}">
-                                <i class="bi bi-flag"></i>
-                            </a>
-                        ` : ''}
-                    </div>
-                </div>
-                <p class="comment-content mb-0 mt-2">${data.content.replace(/\n/g, '<br>')}</p>
-            </li>
-        `;
-
-
-        // Добавляем новый комментарий в начало списка
-        commentContainer.insertAdjacentHTML('afterbegin', newComment);
-
-        // Убираем анимацию через 3 секунды
-        const newCommentElement = document.getElementById(`comment-${data.id}`);
-        setTimeout(() => {
-            console.log("Убираем анимацию с комментария:", data.id); // Отладочное сообщение
-            newCommentElement.classList.remove('blinking');
-        }, 3000); // 3 секунды
-
-        let notificationSound;
-        if (data.current_user_is_author) {
-            // Звук для автора комментария
-            notificationSound = new Audio('/static/sounds/sent_comment.mp3');
-        } else {
-            // Звук для остальных пользователей
-            notificationSound = new Audio('/static/sounds/received_comment.wav');
+        if (data.action === 'update_thread') {
+            const threadId = data.thread_id;
+            const newContent = data.content;
+    
+            // Обновляем контент треда
+            const threadContentElement = document.querySelector('.thread-content p');
+    
+            if (threadContentElement) {
+                threadContentElement.textContent = newContent;
+            }
         }
-        notificationSound.play();
-
-        // Обновление счетчика комментариев
-        const commentCount = document.getElementById('commentCount');
-        if (commentCount) {
-            commentCount.textContent = `Коментарі (${data.comment_count})`; // Обновление текста счетчика
+        if (data.action === 'new_comment') {
+            updateCommentCounter(data.comment_count);
+            addCommentToDOM(data.comment, isAuthenticated, currentUsername);
+        } else if (data.action === 'update_comment') {
+            updateCommentInDOM(data.comment);
+        } else if (data.action === 'delete_comment') {
+            deleteCommentFromDOM(data.comment_id);
+            updateCommentCounter(data.comment_count);
         }
     };
 
-    const commentForm = document.getElementById('commentForm');
-    const submitButton = document.getElementById('submitCommentBtn');
-    const commentInput = document.getElementById('commentInput');
+    // Находим кнопку "Редагувати"
+    const editThreadButton = document.querySelector('.btn-warning');  // Кнопка "Редагувати"
 
-    // Отправка комментария через WebSocket при нажатии на кнопку
-    submitButton.addEventListener('click', function() {
-        const comment = commentInput.value;
+    if (editThreadButton) {
+        editThreadButton.addEventListener('click', function(event) {
+            event.preventDefault();
 
-        if (comment.trim()) {
-            console.log("Sending comment via WebSocket");
-            commentSocket.send(JSON.stringify({
-                'content': comment
-            }));
-            commentInput.value = ''; // Очистить поле ввода
-        }
-    });
+            // Находим текущий контент треда
+            const threadContentElement = document.querySelector('.thread-content p');
+            const currentContent = threadContentElement ? threadContentElement.innerHTML.replace(/<br\s*\/?>/g, '\n') : '';
 
-     // Отправка комментария через WebSocket при нажатии Enter
-     commentInput.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter') {
-            // Если нажат Shift + Enter, добавляем перенос строки
-            if (event.shiftKey) {
-                return; // Не отправляем комментарий, разрешаем перенос строки
+            // Заполняем текстовое поле в модальном окне текущим контентом
+            const editThreadContentInput = document.getElementById('editThreadContent');
+            if (editThreadContentInput) {
+                editThreadContentInput.value = currentContent;
             }
 
-            // Если нажат только Enter, отправляем комментарий
-            event.preventDefault();  // Отменить действие по умолчанию (отправку формы)
-            const comment = commentInput.value;
-
-            if (comment.trim()) {
-                console.log("Sending comment via WebSocket");
-                commentSocket.send(JSON.stringify({
-                    'content': comment
-                }));
-                commentInput.value = ''; // Очистить поле ввода
-            }
-        }
-    });
-});
-
-
-// Делегирование событий на контейнер комментариев
-document.getElementById('comments-container').addEventListener('click', function(e) {
-    if (e.target.closest('.edit-comment')) {
-        e.preventDefault();
-        const button = e.target.closest('.edit-comment');
-        const commentItem = button.closest('li');
-        const commentId = commentItem.id.replace('comment-', '');
-        const commentContent = commentItem.querySelector('.comment-content').innerHTML.trim();
-
-        const decodedContent = decodeEntities(commentContent.replace(/<br\s*\/?>/g, '\n'));
-
-        document.getElementById('commentContent').value = decodedContent;
-        document.getElementById('commentId').value = commentId;
-
-        const editCommentModal = new bootstrap.Modal(document.getElementById('editCommentModal'));
-        editCommentModal.show();
+            // Открываем модальное окно
+            const editThreadModal = new bootstrap.Modal(document.getElementById('editThreadModal'));
+            editThreadModal.show();
+        });
     }
 
-    if (e.target.closest('.delete-comment')) {
-        e.preventDefault();
-        const button = e.target.closest('.delete-comment');
-        const commentId = button.getAttribute('data-id');
-        console.log('Клик по кнопке удаления', e.target);
+    // Редактирование контента треда
+    if (saveThreadChangesButton) {
+        saveThreadChangesButton.addEventListener('click', function() {
+            const newContent = document.getElementById('editThreadContent').value;
 
-        if (confirm('Вы уверены, что хотите удалить этот комментарий?')) {
-            fetch(`/comments/delete/${commentId}/`, {
+            if (newContent) {
+                // Отправляем изменения через WebSocket
+                socket.send(JSON.stringify({
+                    action: 'edit_thread',
+                    thread_id: threadId,  // ID треда
+                    content: newContent
+                }));
+
+                // Закрываем модальное окно
+                const editThreadModal = bootstrap.Modal.getInstance(document.getElementById('editThreadModal'));
+                editThreadModal.hide();
+            } else {
+                alert('Контент не може бути порожнім.');
+            }
+        });
+    }
+
+    // Добавление комментария
+    if (commentForm) {
+        commentForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            const content = document.getElementById("commentInput").value;
+
+            // Отправляем данные на сервер
+            socket.send(JSON.stringify({
+                'action': 'add_comment',
+                'content': content,
+                'thread_id': threadId
+            }));
+
+            // Очищаем поле ввода
+            document.getElementById("commentInput").value = '';
+        });
+    }
+
+    // Открытие модального окна при редактировании
+    commentsContainer.addEventListener("click", function (e) {
+        if (e.target.classList.contains("edit-comment")) {
+            e.preventDefault();
+            const commentId = e.target.dataset.id;
+            const commentContent = document.querySelector(`#comment-${commentId} .comment-content`).innerHTML.replace(/<br\s*\/?>/g, '\n');
+
+            editMessageId.value = commentId;
+            editMessageText.value = commentContent;
+            editMessageModal.show();
+        }
+    });
+
+    // Отправка запроса на сервер после редактирования
+    saveEditedMessageBtn.addEventListener("click", function () {
+        const commentId = editMessageId.value;
+        const newContent = editMessageText.value.trim();
+
+        if (newContent) {
+            console.log("Отправляем отредактированный комментарий:", commentId, newContent);
+            socket.send(JSON.stringify({
+                'action': 'edit_comment',
+                'comment_id': commentId,
+                'content': newContent
+            }));
+            editMessageModal.hide();
+        }
+    });
+
+    // Открытие модального окна при клике на кнопку удаления
+    document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("delete-comment")) {
+            e.preventDefault();
+            commentIdToDelete = e.target.dataset.id; // Запоминаем ID комментария
+            deleteModal.show(); // Открываем модальное окно
+        }
+    });
+
+    // Обработка удаления комментария
+    document.getElementById("confirmDelete").addEventListener("click", function () {
+        if (commentIdToDelete) {
+            socket.send(JSON.stringify({
+                'action': 'delete_comment',
+                'comment_id': commentIdToDelete,
+                'thread_id': threadId
+            }));
+        }
+        deleteModal.hide(); // Закрываем модальное окно
+    });
+
+    
+
+    // Функция для добавления комментария в DOM
+    function addCommentToDOM(comment) {
+        const commentsContainer = document.getElementById("comments-container");
+        console.log(comment)
+
+        const commentHtml = `
+            <div class="comment animate__animated animate__fadeIn" id="comment-${comment.id}">
+                <div class="comment-header">
+                    <div class="d-flex align-items-center">
+                        <div class="message-avatar">
+                            ${comment.avatar_url ? 
+                                `<img src="${comment.avatar_url}" alt="${comment.author}" style="width: 40px; height: 40px; border-radius: 50%;">` 
+                                : `<div>${comment.author[0].toUpperCase()}</div>`}
+                        </div>
+                        <div>
+                            <span class="comment-author">${comment.author}</span>
+                            <span class="comment-date">— ${formatLocalTime(comment.created_at)}</span>
+                        </div>
+                    </div>
+                    ${isAuthenticated ? `
+                        <div class="comment-actions">
+                            <div class="dropdown">
+                                <button class="dropdown-toggle" type="button" id="dropdownMenuButton${comment.id}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton${comment.id}">
+                                    ${comment.is_author ? `
+                                        <li><a class="dropdown-item edit-comment" href="#" data-id="${comment.id}">Редагувати</a></li>
+                                        <li><a class="dropdown-item delete-comment" href="#" data-id="${comment.id}">Видалити</a></li>
+                                    ` : `
+                                        <li><a class="dropdown-item report-comment" href="#" data-id="${comment.id}">Поскаржитися</a></li>
+                                    `}
+                                </ul>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+                <p class="comment-content mt-2">${comment.content.replace(/\n/g, "<br>")}</p>
+            </div>
+        `;
+        
+        commentsContainer.insertAdjacentHTML('afterbegin', commentHtml);
+
+        // Удаляем классы анимации после завершения
+        const newComment = document.getElementById(`comment-${comment.id}`);
+        newComment.addEventListener('animationend', () => {
+            newComment.classList.remove('animate__animated', 'animate__fadeIn');
+        });
+    }
+
+    // Функция для обновления комментария в DOM
+    function updateCommentInDOM(comment) {
+        const commentElement = document.getElementById(`comment-${comment.id}`);
+        if (commentElement) {
+            console.log("Обновляем комментарий в DOM:", comment);
+            commentElement.querySelector(".comment-content").textContent = comment.content;
+        }
+    }
+
+    // Функция для удаления комментария из DOM
+    function deleteCommentFromDOM(commentId) {
+        const commentElement = document.getElementById(`comment-${commentId}`);
+        if (commentElement) {
+            commentElement.remove();
+        }
+    }
+
+    function updateCommentCounter(count) {
+        document.querySelector(".h5.mb-3").textContent = `Коментарі (${count})`;
+    }
+
+    // Открытие модального окна при клике на кнопку "Пожаловаться"
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('report-comment')) {
+            e.preventDefault();
+            const commentId = e.target.dataset.id;
+            reportCommentIdInput.value = commentId; // Устанавливаем ID комментария
+            reportCommentModal.show(); // Открываем модальное окно
+        }
+    });
+
+    // Отправка жалобы
+    submitReportButton.addEventListener('click', async function () {
+        const commentId = reportCommentIdInput.value;
+        const reason = reportReasonSelect.value;
+
+        if (!commentId || !reason) {
+            alert('Будь ласка, оберіть причину скарги.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/comment/${commentId}/report/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const commentItem = document.getElementById('comment-' + commentId);
-                    if (commentItem) {
-                        commentItem.remove();
-                    }
-                    alert('Комментарий удален');
-                } else {
-                    alert('Ошибка при удалении комментария');
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                alert('Произошла ошибка при удалении комментария');
+                },
+                body: JSON.stringify({ reason })
             });
-        }
-    }
 
-    if (e.target.closest('.report-comment')) {
-        e.preventDefault();
-        const button = e.target.closest('.report-comment');
-        const commentId = button.getAttribute('data-id');
+            const result = await response.json();
 
-        document.getElementById('reportCommentId').value = commentId;
-        const reportModal = new bootstrap.Modal(document.getElementById('reportCommentModal'));
-        reportModal.show();
-    }
-});
-
-function decodeEntities(str) {
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = str;
-    return textarea.value;
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const threadSlug = document.getElementById('thread-slug').textContent.trim(); // Получаем slug треда
-    const commentsContainer = document.getElementById('comments-container');
-    const loadMoreButton = document.getElementById('load-more-comments');
-    let offset = 25; // Начальное значение offset (уже загружено 25 комментариев)
-
-    // Функция для загрузки комментариев
-    async function loadComments() {
-        const response = await fetch(`/load-more-comments/${threadSlug}/?offset=${offset}`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
-        const data = await response.json();
-
-        if (data.comments_html) {
-            // Добавляем новые комментарии в контейнер
-            commentsContainer.insertAdjacentHTML('beforeend', data.comments_html);
-            offset += 25; // Увеличиваем offset
-
-            // Скрываем кнопку, если больше нет комментариев
-            if (!data.has_more) {
-                loadMoreButton.style.display = 'none';
+            if (response.ok) {
+                alert(result.message); // "Скаргу успішно надіслано."
+                reportCommentModal.hide(); // Закрываем модальное окно
+            } else {
+                alert(result.message); // Сообщение об ошибке
             }
-        } else {
-            loadMoreButton.style.display = 'none'; // Скрываем кнопку, если комментариев нет
+        } catch (error) {
+            console.error('Помилка:', error);
+            alert('Сталася помилка при відправці скарги.');
         }
-    }
-
-    // Обработчик для кнопки "Посмотреть еще"
-    loadMoreButton.addEventListener('click', loadComments);
+    });
 });
+

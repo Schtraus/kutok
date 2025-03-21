@@ -6,13 +6,33 @@
 
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
 
+
 <!-- Описание сайта -->
-<section class="site-description py-5 bg-light">
-    <div class="container text-center">
-        <h2>Чому варто приєднатися до нашого форуму?</h2>
-        <p class="lead">Це місце, де українці, які знаходяться в Європі, можуть обмінюватися досвідом, знаходити підтримку та допомогу, а також знайомитись з новими людьми. Обговорюйте новини, життя в Європі, отримуйте поради та знайомтесь з іншими.</p>
+<section class="intro-section py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="mb-4">Ласкаво просимо на Rozmova.eu!</h2>
+                <p class="lead mb-4">
+                    Rozmova.eu — це унікальна платформа для українців, які проживають за кордоном. Тут ви знайдете спільноту однодумців, зможете ділитися своїм досвідом, отримувати підтримку та знаходити корисну інформацію про життя в інших країнах.
+                </p>
+                <div class="text-start">
+                    <ul class="list-unstyled">
+                        <li class="mb-3"><i class="bi bi-chat-square-text-fill text-primary me-2"></i><strong>Загальний чат:</strong> Спілкуйтеся з українцями з усього світу в режимі реального часу.</li>
+                        <li class="mb-3"><i class="bi bi-pencil-square text-success me-2"></i><strong>Створення тем:</strong> Діліться своїми думками, запитаннями та досвідом, створюючи власні теми.</li>
+                        <li class="mb-3"><i class="bi bi-people-fill text-warning me-2"></i><strong>Коментування:</strong> Беріть активну участь у обговореннях, допомагайте іншим та отримуйте відповіді на свої запитання.</li>
+                        <li class="mb-3"><i class="bi bi-globe text-info me-2"></i><strong>Глобальна спільнота:</strong> Знаходьте нових друзів, діліться порадами та знаходьте рішення спільних проблем.</li>
+                        <li class="mb-3"><i class="bi bi-lightbulb-fill text-secondary me-2"></i><strong>Корисна інформація:</strong> Отримуйте актуальні новини, поради та рекомендації від інших українців, які вже пройшли шлях адаптації за кордоном.</li>
+                    </ul>
+                </div>
+                <!-- Кнопка "Приєднатися" -->
+                <a href="{% url 'users:register' %}" class="btn btn-primary btn-lg mt-3">Приєднатися</a>
+            </div>
+        </div>
     </div>
 </section>
+
+
 
 <!-- Категории -->
 <section class="category-tree py-5">

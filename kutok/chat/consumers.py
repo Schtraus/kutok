@@ -164,56 +164,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             logger.warning(f"Попытка удалить несуществующего сообщения: {message_id}")
 
 
-
-    # async def delete_message(self, user, message_id):
-    #     """
-    #     Обновляем текст сообщения на "Сообщение удалено" и отправляем событие всем участникам чата.
-    #     """
-    #     try:
-    #         # Синхронное обновление сообщения
-    #         success = await sync_to_async(self._delete_message_sync)(user, message_id)
-
-    #         if success:
-    #             # Отправляем событие об удалении всем участникам чата
-    #             await self.channel_layer.group_send(
-    #                 self.room_group_name,
-    #                 {
-    #                     'type': 'chat_message',  # Тип события
-    #                     'action': 'delete_message',  # Действие
-    #                     'message_id': message_id,  # ID сообщения
-    #                     'message': "Сообщение удалено"  # Новый текст сообщения
-    #                 }
-    #             )
-    #             logger.info(f"Событие delete_message отправлено для сообщения {message_id}")  # Логирование
-    #         else:
-    #             logger.warning(f"Не удалось обновить сообщение {message_id}")  # Логирование
-    #     except Exception as e:
-    #         logger.error(f"Ошибка при удалении сообщения: {e}")
-
-    # @sync_to_async(thread_sensitive=True)
-    # def _delete_message_sync(self, user, message_id):
-    #     """
-    #     Синхронная часть: обновление текста сообщения на "Сообщение удалено".
-    #     """
-    #     try:
-    #         with transaction.atomic():  # Используем транзакцию для гарантии сохранения изменений
-    #             message = ChatMessage.objects.get(id=message_id)
-    #             if message.user == user:
-    #                 message.message = "Сообщение удалено"  # Меняем текст сообщения
-    #                 message.is_deleted = True  # Помечаем сообщение как удалённое
-    #                 message.save()
-    #                 logger.info(f"Сообщение {message_id} обновлено пользователем {user.username}")  # Логирование
-    #                 return True  # Успешное обновление
-    #             else:
-    #                 logger.warning(f"Попытка удаления чужого сообщения: {message_id}")  # Логирование
-    #                 return False  # Неудачное обновление
-    #     except ChatMessage.DoesNotExist:
-    #         logger.warning(f"Попытка удаления несуществующего сообщения: {message_id}")  # Логирование
-    #         return False  # Неудачное обновление
-    #     except Exception as e:
-    #         logger.error(f"Ошибка при удалении сообщения: {e}")  # Логирование
-    #         return False  # Неудачное обновление
-
     @sync_to_async(thread_sensitive=True)
     def report_message(self, user, message_id, reason):
         try:

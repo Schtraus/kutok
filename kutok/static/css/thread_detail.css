@@ -1,32 +1,15 @@
-@-webkit-keyframes blink {
-    0% { background-color: black; color: white; } 
-    50% { background-color: yellow; color: black; } 
-    100% { background-color: black; color: white; } 
-}
 
-@keyframes blink {
-    0% { background-color: black; color: white; } 
-    50% { background-color: yellow; color: black; } 
-    100% { background-color: black; color: white; } 
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.blinking {
-    -webkit-animation: blink 1s ease-in-out 3;
-    animation: blink 1s ease-in-out 3;
-    background-color: rgba(168, 230, 160, 0.6);
-}
-
-.fade-in {
-    animation: fadeIn 0.5s ease-in-out;
-}
 
 .comment-content {
     word-wrap: break-word; /* Разрывает длинные слова, чтобы они не выходили за пределы блока */
     overflow-wrap: break-word; /* Для дополнительной совместимости с другими браузерами */
-    white-space: normal; /* Восстанавливает нормальное поведение пробелов */
+    white-space: pre-line;
 }
+
+.thread-text {
+    white-space: pre-line;  /* Сохраняет переносы строк */
+}
+
+
+
+

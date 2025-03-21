@@ -4,15 +4,93 @@
 {% block content %}
 
 <link rel="stylesheet" href="{% static 'css/thread_detail.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .thread-content {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    .comment {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 12px;
+        margin-bottom: 8px;
+    }
+    .comment-content {
+        margin: 0;
+        font-size: 14px;
+    }
+    .comment-author {
+        font-weight: bold;
+        font-size: 14px;
+    }
+    .comment-date {
+        color: #6c757d;
+        font-size: 12px;
+    }
+    .comment-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    .comment-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+    .comment-actions {
+        position: relative;
+    }
+    .comment-actions .dropdown-toggle {
+        background: none;
+        border: none;
+        color: #6c757d;
+        padding: 0;
+    }
+    .comment-actions .dropdown-toggle:hover {
+        color: #0d6efd;
+    }
+    .add-comment {
+        margin-bottom: 16px;
+    }
+    .add-comment textarea {
+        resize: none;
+    }
 
-<div class="container my-5">
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+        background-color: #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        color: #fff;
+    }
+
+    
+</style>
+
+<div class="container my-4">
     <div class="row">
         <!-- Основной контент: обсуждение и комментарии -->
         <div class="col-lg-8">
             <!-- Заголовок треда -->
             <h1 class="mb-3">{{ thread.title }}</h1>
             <p class="text-muted">
-                Автор: {{ thread.author }} | Дата створення: {{ thread.created_at }} | Оновлено: {{ thread.updated_at }}
+                Автор: {{ thread.author }} | Опубліковано: {{ thread.created_at|date:"d M Y H:i" }}
             </p>
 
             <!-- Кнопки для автора треда -->
@@ -21,34 +99,31 @@
                 <a href="#" class="btn btn-warning btn-sm">
                     <i class="bi bi-pencil"></i> Редагувати
                 </a>
-                <a href="#" class="btn btn-danger btn-sm">
-                    <i class="bi bi-trash"></i> Видалити
-                </a>
             </div>
             {% endif %}
 
             <!-- Кнопка "Пожаловаться" для авторизованных пользователей (кроме автора) -->
-            {% if user.is_authenticated and user != thread.author %}
+            {% comment %} {% if user.is_authenticated and user != thread.author %}
             <div class="mb-3">
                 <a href="#" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#reportThreadModal">
                     <i class="bi bi-flag"></i> Поскаржитися
                 </a>
             </div>
-            {% endif %}
+            {% endif %} {% endcomment %}
 
             <!-- Контент треда -->
-            <div class="thread-content mb-4 p-4 bg-light rounded">
-                <h2 class="h5">Питання від автора:</h2>
-                <p>{{ thread.content|linebreaksbr }}</p>
+            <h2 class="h5">Питання від автора:</h2>
+            <div class="thread-content">
+                <p class="thread-text">{{ thread.content|linebreaksbr }}</p>
             </div>
 
             <hr>
 
             <!-- Форма для добавления комментария -->
             {% if user.is_authenticated %}
-            <section class="add-comment mb-4">
+            <section class="add-comment">
                 <h2 class="h5">Додати коментар</h2>
-                <form id="commentForm" class="card p-4 shadow-sm rounded">
+                <form id="commentForm" class="card p-3 shadow-sm rounded">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="commentInput" class="form-label">{{ form.content.label }}</label>
@@ -56,7 +131,7 @@
                             id="commentInput" 
                             name="content" 
                             class="form-control" 
-                            rows="4" 
+                            rows="3" 
                             placeholder="Напишіть ваш коментар..." 
                             required
                         ></textarea>
@@ -68,7 +143,7 @@
                             </div>
                         {% endif %}
                     </div>
-                    <button type="button" class="btn btn-primary w-100" id="submitCommentBtn">
+                    <button type="submit" class="btn btn-primary w-100">
                         <i class="bi bi-send"></i> Додати
                     </button>
                 </form>
@@ -85,42 +160,48 @@
 
             <!-- Список комментариев -->
             <section class="comments">
-                <h2 class="h5 mb-4" id="commentCount">Коментарі ({{comment_count}})</h2>
-                <ul class="list-group" id="comments-container">
+                <h2 class="h5 mb-3">Коментарі ({{ comment_count }})</h2>
+                <div id="comments-container">
                     {% for comment in comments %}
-                        <li class="list-group-item mb-3 p-3 shadow-sm rounded" id="comment-{{ comment.id }}">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>{{ comment.author }}</strong>
-                                    <span class="text-muted small">— {{ comment.created_at|date:"d M Y H:i" }}</span>
+                        <div class="comment visible" id="comment-{{comment.id}}">
+                            <div class="comment-header">
+                                <div class="d-flex align-items-center">
+                                    <div class="message-avatar">
+                                        {% if comment.avatar_url %}
+                                            <img src="{{ comment.avatar_url }}" alt="{{ comment.author }}" style="width: 40px; height: 40px; border-radius: 50%;">
+                                        {% else %}
+                                            <div>{{ comment.author|first|upper }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <span class="comment-author">{{ comment.author }}</span>
+                                        <span class="comment-date" data-utc-time="{{ comment.created_at }}">— {{ comment.created_at|date:"d M Y H:i" }}</span>
+                                    </div>
                                 </div>
-
-                                <div class="ms-auto">
-                                    {% if comment.author == user %}
-                                        <!-- Редактировать комментарий -->
-                                        <a href="#" class="btn btn-warning btn-sm edit-comment">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <!-- Удалить комментарий -->
-                                        <a href="#" class="btn btn-danger btn-sm delete-comment" data-id="{{ comment.id }}">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                    {% elif user.is_authenticated %}
-                                        <!-- Пожаловаться на комментарий -->
-                                        <a href="#" class="btn btn-danger btn-sm report-comment" data-id="{{ comment.id }}">
-                                            <i class="bi bi-flag"></i>
-                                        </a>
-                                    {% endif %}
+                                {% if user.is_authenticated %}
+                                <div class="comment-actions">
+                                    <div class="dropdown">
+                                        <button class="dropdown-toggle" type="button" id="dropdownMenuButton{{ comment.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ comment.id }}">
+                                            {% if comment.author == user %}
+                                            <li><a class="dropdown-item edit-comment" href="#" data-id="{{ comment.id }}">Редагувати</a></li>
+                                            <li><a class="dropdown-item delete-comment" href="#" data-id="{{ comment.id }}">Видалити</a></li>
+                                            {% elif user.is_authenticated %}
+                                            <li><a class="dropdown-item report-comment" href="#" data-id="{{ comment.id }}">Поскаржитися</a></li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
                                 </div>
+                                {% endif %}
                             </div>
-
-                            <!-- Комментарий -->
-                            <p class="comment-content mb-0 mt-2">{{ comment.content|linebreaksbr }}</p>
-                        </li>
+                            <p class="comment-content mt-2">{{ comment.content|linebreaksbr }}</p>
+                        </div>
                     {% endfor %}
-                </ul>
+                </div>
                 <!-- Кнопка "Посмотреть еще" -->
-                <button id="load-more-comments" class="btn btn-primary mt-3">Посмотреть еще</button>
+                <button id="load-more-comments" data-thread-slug="{{ thread.slug }}" data-offset="25">Посмотреть еще комментарии</button>
             </section>
         </div>
 
@@ -156,79 +237,112 @@
     </div>
 </div>
 
-<!-- Модальное окно редактирования комментария -->
-<div class="modal fade" id="editCommentModal" tabindex="-1" aria-labelledby="editCommentModalLabel" aria-hidden="true">
+
+<!-- Модальное окно для редактирования комментария -->
+<div class="modal fade" id="editMessageModal" tabindex="-1" aria-labelledby="editMessageModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editCommentModalLabel">Редактировать комментарий</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="editMessageModalLabel">Редактировать комментарий</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body">
-                <form id="editCommentForm">
-                    {% csrf_token %}
+                <form id="editMessageForm">
+                    <input type="hidden" id="editMessageId">
                     <div class="mb-3">
-                        <label for="commentContent" class="form-label">Комментарий</label>
-                        <textarea class="form-control" id="commentContent" rows="3"></textarea>
+                        <label for="editMessageText" class="form-label">Текст комментария</label>
+                        <textarea class="form-control" id="editMessageText" rows="3"></textarea>
                     </div>
-                    <input type="hidden" id="commentId" value="">
-                    <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save"></i> Зберегти зміни
-                    </button>
                 </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveEditedMessage">Сохранить</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Модальное окно жалобы на комментарий -->
+
+<!-- Модальное окно для удаления комментария -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                Вы уверены, что хотите удалить этот комментарий?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" id="confirmDelete" class="btn btn-danger">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Модальное окно для жалобы -->
 <div class="modal fade" id="reportCommentModal" tabindex="-1" aria-labelledby="reportCommentModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
+            <!-- Заголовок модального окна -->
             <div class="modal-header">
-                <h5 class="modal-title" id="reportCommentModalLabel">Пожаловаться на комментарий</h5>
+                <h5 class="modal-title" id="reportCommentModalLabel">Скарга на коментар</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
+            <!-- Тело модального окна -->
             <div class="modal-body">
                 <form id="reportCommentForm">
-                    {% csrf_token %}
+                    <!-- Скрытое поле для ID комментария -->
                     <input type="hidden" id="reportCommentId">
-                    <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
+
+                    <!-- Выпадающий список с причинами жалобы -->
                     <div class="mb-3">
-                        <label for="reportReason" class="form-label">Причина жалобы</label>
-                        <textarea class="form-control" id="reportReason" rows="3"></textarea>
+                        <label for="reportReason" class="form-label">Оберіть причину скарги</label>
+                        <select class="form-select" id="reportReason" required>
+                            <option value="Спам">Спам</option>
+                            <option value="Образа">Образа</option>
+                            <option value="Реклама">Реклама сторонніх ресурсів</option>
+                            <option value="Неправильна поведінка">Неправильна поведінка</option>
+                            <option value="Інше">Інше</option>
+                        </select>
                     </div>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-flag"></i> Відправити скаргу
-                    </button>
                 </form>
+            </div>
+
+            <!-- Футер модального окна с кнопками -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-primary" id="submitReport">Надіслати скаргу</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Модальное окно жалобы на тред -->
-<div class="modal fade" id="reportThreadModal" tabindex="-1" aria-labelledby="reportThreadModalLabel" aria-hidden="true">
+
+<!-- Модальное окно для редактирования треда -->
+<div class="modal fade" id="editThreadModal" tabindex="-1" aria-labelledby="editThreadModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="reportThreadModalLabel">Пожаловаться на тред</h5>
+                <h5 class="modal-title" id="editThreadModalLabel">Редагувати тред</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="reportThreadForm">
-                    {% csrf_token %}
-                    <input type="hidden" id="reportThreadId" value="{{ thread.id }}">
-                    <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
+                <form id="editThreadForm">
                     <div class="mb-3">
-                        <label for="reportThreadReason" class="form-label">Причина жалобы</label>
-                        <textarea class="form-control" id="reportThreadReason" rows="3"></textarea>
+                        <label for="editThreadContent" class="form-label">Контент</label>
+                        <textarea class="form-control thread-text" id="editThreadContent" rows="5" required>{{ thread.content }}</textarea>
                     </div>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-flag"></i> Відправити скаргу
-                    </button>
                 </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрити</button>
+                <button type="button" class="btn btn-primary" id="saveThreadChanges">Зберегти зміни</button>
             </div>
         </div>
     </div>
@@ -239,5 +353,6 @@
 <span id="thread-slug" style="display:none">{{ thread.slug }}</span>
 
 <script src="{% static 'js/comments.js' %}"></script>
+{% comment %} <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> {% endcomment %}
 
 {% endblock %}

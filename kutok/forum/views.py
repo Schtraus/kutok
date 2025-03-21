@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import json
 from django.template.loader import render_to_string
+from datetime import datetime, timezone
 
 
 
@@ -127,14 +128,6 @@ def category_list(request):
     return render(request, 'forum/category_list.html', context=data)
 
 
-def category_page(request, category_slug):
-    category = get_object_or_404(Category, slug=category_slug)
-
-    data = {
-        'category': category,
-    }
-    return render(request, 'forum/category_page.html', context=data)
-
 
 class ThreadCreateView(LoginRequiredMixin, CreateView):
     model = Thread
@@ -162,7 +155,19 @@ def thread_detail(request, thread_slug):
     comments_list = thread.comments.all().order_by('-created_at')
 
     # Загружаем первые 25 комментариев
-    comments = comments_list[:25]
+    # comments = comments_list[:25]
+
+    # Преобразуем время комментариев в UTC
+    comments = [
+        {
+            'id': comment.id,
+            'author': comment.author.username,
+            'content': comment.content,
+            'created_at': comment.created_at.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),  # Время в UTC
+            'avatar_url': comment.author.profile.avatar.url if hasattr(comment.author, 'profile') else '',
+        }
+        for comment in comments_list[:25]  # Берем первые 25 комментариев
+    ]
 
     # Получаем общее количество комментариев
     comment_count = comments_list.count()
@@ -170,22 +175,22 @@ def thread_detail(request, thread_slug):
     latest_threads = Thread.objects.order_by('-created_at')[:7]
     popular_threads = Thread.objects.annotate(comment_count=models.Count('comments')).order_by('-comment_count')[:7]
 
-    if request.method == "POST":
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.thread = thread
-            comment.author = request.user
-            comment.save()
-            return redirect(thread.get_absolute_url())
-    else:
-        form = CommentForm()
+    # if request.method == "POST":
+    #     form = CommentForm(request.POST)
+    #     if form.is_valid():
+    #         comment = form.save(commit=False)
+    #         comment.thread = thread
+    #         comment.author = request.user
+    #         comment.save()
+    #         return redirect(thread.get_absolute_url())
+    # else:
+    #     form = CommentForm()
 
     context = {
         'thread': thread,
         'comments': comments,  # Передаем первые 25 комментариев
         'comment_count': comment_count,  # Общее количество комментариев
-        'form': form,
+        # 'form': form,
         'latest_threads': latest_threads,
         'popular_threads': popular_threads,
     }
@@ -200,9 +205,21 @@ def load_more_comments(request, thread_slug):
     # Получаем следующие 25 комментариев
     comments = thread.comments.all().order_by('-created_at')[offset:offset + limit]
 
+    # Сериализуем комментарии
+    serialized_comments = [
+        {
+            'id': comment.id,
+            'author': comment.author.username,
+            'content': comment.content,
+            'created_at': comment.created_at.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            'avatar_url': comment.author.profile.avatar.url if hasattr(comment.author, 'profile') and comment.author.profile.avatar else '',
+        }
+        for comment in comments
+    ]
+
     # Рендерим HTML для новых комментариев
     comments_html = render_to_string('forum/comments_partial.html', {
-        'comments': comments,
+        'comments': serialized_comments,
         'user': request.user,  # Передаем текущего пользователя в контекст
     })
 
@@ -212,87 +229,28 @@ def load_more_comments(request, thread_slug):
     })
 
 
-
+@csrf_exempt  # Отключаем CSRF-защиту, если это не критично
 @require_POST
-def update_comment(request, comment_id):
-    try:
-        data = json.loads(request.body)
-        content = data.get('content')
-
-        if not content:
-            return JsonResponse({'success': False, 'error': 'Контент комментария не может быть пустым'})
-
-        comment = Comment.objects.get(id=comment_id)
-        if comment.author == request.user:
-            comment.content = content
-            comment.save()
-            return JsonResponse({'success': True})
-        else:
-            return JsonResponse({'success': False, 'error': 'Нет прав для редактирования'})
-    except Comment.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Комментарий не найден'})
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Ошибка парсинга JSON'})
-
-# def search_threads(request):
-
-
-    query = request.GET.get('q')
-    results = Thread.objects.filter(is_active=True)
-
-    if query:
-        results = results.filter(
-            Q(title__icontains=query) | Q(content__icontains=query)
-        )
-
-    categories = Category.objects.filter(is_active=True)
-
-    paginator = Paginator(results, 5)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    return render(request, 'forum/thread_list.html', {
-        'threads': results,
-        'categories': categories,
-        'countries': COUNTRIES,
-        'page_title': f'Результати пошуку для "{query}"',
-        'page_obj': page_obj,
-    })
-
-
 @login_required
 def report_comment(request, comment_id):
-    if request.method == 'POST':
-        try:
-            print("Request Body:", request.body.decode('utf-8'))
-            # Парсим JSON из body запроса
-            data = json.loads(request.body)
-            reason = data.get('reason')  # Извлекаем значение причины
+    try:
+        comment = Comment.objects.get(id=comment_id)
+        data = json.loads(request.body)
+        reason = data.get('reason')
+        # reason = request.POST.get('reason')
 
-            # Получаем комментарий
-            comment = Comment.objects.get(id=comment_id)
+        # Проверяем, не жаловался ли уже пользователь на этот комментарий
+        if Complaint.objects.filter(comment=comment, user=request.user).exists():
+            return JsonResponse({'status': 'error', 'message': 'Ви вже скаржилися на цей коментар.'}, status=400)
 
-            # Создаем жалобу
-            Complaint.objects.create(comment=comment, user=request.user, reason=reason)
+        # Создаем запись о жалобе
+        Complaint.objects.create(
+            comment=comment,
+            user=request.user,
+            reason=reason,
+            status='new'  # Статус по умолчанию
+        )
 
-            return JsonResponse({'success': True})
-        except Comment.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Комментарий не найден'})
-        except json.JSONDecodeError:
-            return JsonResponse({'success': False, 'error': 'Ошибка при разборе данных'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-
-    return JsonResponse({'success': False, 'error': 'Неверный запрос'})
-
-
-@login_required
-def delete_comment(request, comment_id):
-    if request.method == 'POST':
-        try:
-            comment = Comment.objects.get(id=comment_id, author=request.user)  # Проверяем, что комментарий принадлежит текущему пользователю
-            comment.delete()
-            return JsonResponse({'success': True})
-        except Comment.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Комментарий не найден или не принадлежит вам'})
-    return JsonResponse({'success': False, 'error': 'Неверный запрос'})
+        return JsonResponse({'status': 'success', 'message': 'Скаргу успішно надіслано.'})
+    except Comment.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Коментар не знайдено.'}, status=404)

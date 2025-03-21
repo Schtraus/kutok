@@ -4,6 +4,12 @@
     align-items: center;
     width: 100%;
 }
+
+.message-text {
+    white-space: pre-line;
+    word-wrap: break-word;
+    font-size: 0.9rem;
+}
 /* Стили для выпадающего меню */
 .message-actions .dropdown-menu {
     z-index: 9999; /* Очень высокий z-index, чтобы быть поверх всех элементов */
@@ -79,7 +85,7 @@
     z-index: 1;
     position: relative;
     max-width: 800px;
-    margin: 50px auto;
+    margin: 15px auto;
     background: #fff;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -143,11 +149,11 @@
 }
 
 .message-content {
-    word-wrap: break-word; /* Переносим длинные слова */
+    /* word-wrap: break-word; */
     display: inline-block; /* Позволяет блоку растягиваться по содержимому */
     min-width: 120px; /* Минимальная ширина блока */
     max-width: 70%;
-    padding: 10px;
+    padding: 7px;
     border-radius: 10px;
     position: relative;
     background: #e9ecef;
@@ -170,7 +176,7 @@
     margin-right: 45px;
     font-weight: bold;
     font-size: 0.9rem;
-    margin-bottom: 5px;
+    /* margin-bottom: 5px; */
 }
 
 .message-time {
@@ -240,8 +246,5 @@
         font-size: 1rem;
     }
 
-    .message-content {
-        max-width: 80%;
-    }
 
 }
